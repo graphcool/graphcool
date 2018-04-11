@@ -6,7 +6,7 @@ import com.prisma.api.connector.DataResolver
 import com.prisma.api.connector.mysql.database.DataResolverImpl
 import com.prisma.api.util.StringMatchers
 import com.prisma.api.{ApiDependenciesForTest, ApiTestDatabase, ApiTestServer}
-import com.prisma.deploy.specutils.{DeployTestDependencies, DeployTestServer}
+import com.prisma.deploy.specutils.{DeployDependenciesForTest, DeployTestServer}
 import com.prisma.shared.models.{Migration, Project}
 import com.prisma.util.json.SprayJsonExtensions
 import com.prisma.utils.await.AwaitUtils
@@ -39,7 +39,7 @@ trait IntegrationBaseSpec extends BeforeAndAfterEach with BeforeAndAfterAll with
 
   // DEPLOY
 
-  implicit lazy val deployTestDependencies: DeployTestDependencies = DeployTestDependencies()
+  implicit lazy val deployTestDependencies: DeployDependenciesForTest = DeployDependenciesForTest()
 
   val deployServer      = DeployTestServer()
   val projectsToCleanUp = new ArrayBuffer[String]

@@ -8,7 +8,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class ApiConnectorImpl()(implicit ec: ExecutionContext) extends ApiConnector {
+case class MySqlApiConnectorImpl()(implicit ec: ExecutionContext) extends ApiConnector {
   lazy val config: Config = ConfigFactory.load()
   lazy val databases      = Databases.initialize(config)
 
@@ -27,5 +27,4 @@ case class ApiConnectorImpl()(implicit ec: ExecutionContext) extends ApiConnecto
   override def databaseMutactionExecutor: DatabaseMutactionExecutor = DatabaseMutactionExecutorImpl(databases.master)
   override def dataResolver(project: Project)                       = DataResolverImpl(project, databases.readOnly)
   override def masterDataResolver(project: Project)                 = DataResolverImpl(project, databases.master)
-
 }

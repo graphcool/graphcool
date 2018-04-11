@@ -2,7 +2,7 @@ package com.prisma.deploy.schema
 
 import akka.actor.ActorSystem
 import com.prisma.deploy.DeployDependencies
-import com.prisma.deploy.connector.{DeployConnector, MigrationPersistence, ProjectPersistence}
+import com.prisma.deploy.connector.{DatabaseIntrospector, DeployConnector, MigrationPersistence, ProjectPersistence}
 import com.prisma.deploy.migration.SchemaMapper
 import com.prisma.deploy.migration.inference.{MigrationStepsInferrer, SchemaInferrer}
 import com.prisma.deploy.migration.migrator.Migrator
@@ -34,6 +34,7 @@ case class SchemaBuilderImpl(
   import system.dispatcher
 
   val projectPersistence: ProjectPersistence         = dependencies.projectPersistence
+  val databaseIntrospector: DatabaseIntrospector     = dependencies.databaseIntrospector
   val migrationPersistence: MigrationPersistence     = dependencies.migrationPersistence
   val persistencePlugin: DeployConnector             = dependencies.deployPersistencePlugin
   val migrator: Migrator                             = dependencies.migrator
@@ -59,6 +60,7 @@ case class SchemaBuilderImpl(
     migrationStatusField,
     listProjectsField,
     listMigrationsField,
+    listCollectionsField,
     projectField,
     clusterInfoField,
     generateProjectTokenField
@@ -98,6 +100,26 @@ case class SchemaBuilderImpl(
       // Only accessible via */* token, like the one the Cloud API uses
       verifyAuthOrThrow("", "", ctx.ctx.authorizationHeader)
       projectPersistence.loadAll()
+    }
+  )
+
+  val CollectionType = sangria.schema.ObjectType(
+    "Project",
+    "This is a project",
+    sangria.schema.fields[SystemUserContext, String](
+      sangria.schema.Field("name", StringType, resolve = ctx => ctx.value),
+      sangria.schema.Field("schema", StringType, resolve = ctx => databaseIntrospector.generateSchema(ctx.value)),
+    )
+  )
+
+  val listCollectionsField: Field[SystemUserContext, Unit] = Field(
+    "listCollections",
+    ListType(CollectionType),
+    description = Some("Shows all collections in the underlying database."),
+    resolve = (ctx) => {
+      // Only accessible via */* token, like the one the Cloud API uses
+      verifyAuthOrThrow("", "", ctx.ctx.authorizationHeader)
+      databaseIntrospector.listCollections
     }
   )
 

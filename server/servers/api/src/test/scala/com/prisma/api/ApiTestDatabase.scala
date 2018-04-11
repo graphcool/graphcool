@@ -2,7 +2,7 @@ package com.prisma.api
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.prisma.api.connector.mysql.ApiConnectorImpl
+import com.prisma.api.connector.mysql.MySqlApiConnectorImpl
 import com.prisma.api.connector.{ApiConnector, DatabaseMutaction}
 import com.prisma.api.connector.mysql.database.DatabaseQueryBuilder
 import com.prisma.deploy.connector.mysql.impls.DeployMutactionExectutorImpl
@@ -16,7 +16,7 @@ case class ApiTestDatabase()(implicit dependencies: ApiDependencies) extends Awa
 
   implicit lazy val system: ActorSystem             = dependencies.system
   implicit lazy val materializer: ActorMaterializer = dependencies.materializer
-  private lazy val clientDatabase: DatabaseDef      = dependencies.apiConnector.asInstanceOf[ApiConnectorImpl].databases.master
+  private lazy val clientDatabase: DatabaseDef      = dependencies.apiConnector.asInstanceOf[MySqlApiConnectorImpl].databases.master
 
   def setup(project: Project): Unit = {
     delete(project)

@@ -4,13 +4,13 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.prisma.akkautil.http.SimpleHttpClient
 import com.prisma.api.ApiDependencies
-import com.prisma.api.connector.mysql.ApiConnectorImpl
+import com.prisma.api.connector.mysql.MySqlApiConnectorImpl
 import com.prisma.api.mutactions.{DatabaseMutactionVerifierImpl, SideEffectMutactionExecutorImpl}
 import com.prisma.api.project.{CachedProjectFetcherImpl, ProjectFetcher}
 import com.prisma.api.schema.{CachedSchemaBuilder, SchemaBuilder}
 import com.prisma.auth.AuthImpl
 import com.prisma.deploy.DeployDependencies
-import com.prisma.deploy.connector.mysql.MySqlDeployConnector
+import com.prisma.deploy.connector.mysql.MySqlDeployConnectorImpl
 import com.prisma.deploy.migration.migrator.{AsyncMigrator, Migrator}
 import com.prisma.deploy.server.{ClusterAuthImpl, DummyClusterAuth}
 import com.prisma.image.{Converters, FunctionValidatorImpl, SingleServerProjectFetcher}
@@ -88,10 +88,10 @@ case class PrismaLocalDependencies()(implicit val system: ActorSystem, val mater
   override lazy val webhooksConsumer        = webhooksQueue.map[WorkerWebhook](Converters.apiWebhook2WorkerWebhook)
   override lazy val httpClient              = SimpleHttpClient()
   override lazy val apiAuth                 = AuthImpl
-  override lazy val deployPersistencePlugin = MySqlDeployConnector(apiConnector.databases.master)(system.dispatcher)
+  override lazy val deployPersistencePlugin = MySqlDeployConnectorImpl(apiConnector.databases.master)(system.dispatcher)
   override lazy val functionValidator       = FunctionValidatorImpl()
 
-  override lazy val apiConnector                = ApiConnectorImpl()
+  override lazy val apiConnector                = MySqlApiConnectorImpl()
   override lazy val sideEffectMutactionExecutor = SideEffectMutactionExecutorImpl()
   override lazy val mutactionVerifier           = DatabaseMutactionVerifierImpl
 }

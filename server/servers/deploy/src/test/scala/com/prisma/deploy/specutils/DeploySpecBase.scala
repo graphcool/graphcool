@@ -12,9 +12,9 @@ import scala.collection.mutable.ArrayBuffer
 
 trait DeploySpecBase extends BeforeAndAfterEach with BeforeAndAfterAll with AwaitUtils with SprayJsonExtensions { self: Suite =>
 
-  implicit lazy val system                                   = ActorSystem()
-  implicit lazy val materializer                             = ActorMaterializer()
-  implicit lazy val testDependencies: DeployTestDependencies = DeployTestDependencies()
+  implicit lazy val system                                      = ActorSystem()
+  implicit lazy val materializer                                = ActorMaterializer()
+  implicit lazy val testDependencies: DeployDependenciesForTest = DeployDependenciesForTest()
 
   val server = DeployTestServer()
 //  val clientDb          = testDependencies.clientTestDb

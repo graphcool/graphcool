@@ -9,6 +9,7 @@ trait DeployConnector {
   def migrationPersistence: MigrationPersistence
   def deployMutactionExecutor: DeployMutactionExecutor
   def clientDBQueries(project: Project): ClientDbQueries
+  def databaseIntrospector: DatabaseIntrospector
 
   def initialize(): Future[Unit]
   def reset(): Future[Unit]
@@ -28,4 +29,12 @@ trait ClientDbQueries {
   def existsByRelation(relationId: String): Future[Boolean]
   def existsNullByModelAndScalarField(model: Model, field: Field): Future[Boolean]
   def existsNullByModelAndRelationField(model: Model, field: Field): Future[Boolean]
+}
+
+trait DatabaseIntrospector {
+  // `Collections` is used as a generic term to describe individual databases on a single db cluster.
+  // In MySQL they are called schemas, in Mongo they are called collections
+
+  def listCollections: Future[Vector[String]]
+  def generateSchema(collection: String): Future[String]
 }

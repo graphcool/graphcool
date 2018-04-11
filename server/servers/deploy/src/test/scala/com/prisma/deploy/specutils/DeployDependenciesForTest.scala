@@ -5,7 +5,7 @@ import akka.stream.ActorMaterializer
 import com.prisma.auth.AuthImpl
 import com.prisma.deploy.DeployDependencies
 import com.prisma.deploy.connector.DeployConnector
-import com.prisma.deploy.connector.mysql.MySqlDeployConnector
+import com.prisma.deploy.connector.mysql.MySqlDeployConnectorImpl
 import com.prisma.deploy.migration.validation.SchemaError
 import com.prisma.deploy.schema.mutations.{FunctionInput, FunctionValidator}
 import com.prisma.deploy.server.DummyClusterAuth
@@ -13,7 +13,7 @@ import com.prisma.errors.{BugsnagErrorReporter, ErrorReporter}
 import com.prisma.messagebus.pubsub.inmemory.InMemoryAkkaPubSub
 import com.prisma.shared.models.Project
 
-case class DeployTestDependencies()(implicit val system: ActorSystem, val materializer: ActorMaterializer) extends DeployDependencies {
+case class DeployDependenciesForTest()(implicit val system: ActorSystem, val materializer: ActorMaterializer) extends DeployDependencies {
   override implicit def self: DeployDependencies = this
 
   implicit val reporter: ErrorReporter    = BugsnagErrorReporter(sys.env.getOrElse("BUGSNAG_API_KEY", ""))
@@ -36,7 +36,7 @@ case class DeployTestDependencies()(implicit val system: ActorSystem, val materi
       password = sqlInternalPassword,
       driver = "org.mariadb.jdbc.Driver"
     )
-    MySqlDeployConnector(clientDatabase = clientDb)(system.dispatcher)
+    MySqlDeployConnectorImpl(clientDatabase = clientDb)(system.dispatcher)
   }
 
   override def functionValidator: FunctionValidator = (project: Project, fn: FunctionInput) => {

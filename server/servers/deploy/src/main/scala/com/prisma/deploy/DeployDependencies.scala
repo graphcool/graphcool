@@ -30,6 +30,7 @@ trait DeployDependencies extends AwaitUtils {
 
   lazy val projectPersistence   = deployPersistencePlugin.projectPersistence
   lazy val migrationPersistence = deployPersistencePlugin.migrationPersistence
+  lazy val databaseIntrospector = deployPersistencePlugin.databaseIntrospector
   lazy val clusterSchemaBuilder = SchemaBuilder()
 
   def initialize()(implicit ec: ExecutionContext): Unit = {
