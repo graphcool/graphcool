@@ -443,7 +443,7 @@ export class EndpointDialog {
           ? clusters.map(this.getClusterChoice)
           : sandboxChoices
       const rawChoices = [
-        ['local', 'Local Prisma server (connected to MySQL)'],
+        ['local', 'Local Prisma server'],
         ...clusterChoices,
         ['Use other server', 'Connect to an existing prisma server'],
         ['Use existing database', 'Connect to existing database'],
