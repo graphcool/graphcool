@@ -12,9 +12,21 @@ class WhereAndJsonSpec extends FlatSpec with Matchers with ApiSpecBase {
     val outerWhere = """"{\"stuff\": 1, \"nestedStuff\" : {\"stuff\": 2 } }""""
     val innerWhere = """"{\"stuff\": 2, \"nestedStuff\" : {\"stuff\": 1, \"nestedStuff\" : {\"stuff\": 2 } } }""""
 
-    val project = SchemaDsl.fromBuilder { schema =>
-      val note = schema.model("Note").field("outerString", _.String).field("outerJson", _.Json, isUnique = true)
-      schema.model("Todo").field_!("innerString", _.String).field("innerJson", _.Json, isUnique = true).manyToManyRelation("notes", "todos", note)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | innerString: String!
+        | innerJson: Json @unique
+        | notes: [Note!]!
+        |}
+        |
+        |type Note {
+        | id: ID! @unique
+        | outerString: String
+        | outerJson: Json @unique
+        | todos: [Todo!]!
+        |}
+      """.stripMargin
     }
     database.setup(project)
 

@@ -19,9 +19,19 @@ class DeadlockSpec extends FlatSpec with Matchers with Retries with ApiSpecBase 
   }
 
   "creating many items" should "not cause deadlocks" in {
-    val project = SchemaDsl.fromBuilder { schema =>
-      val comment = schema.model("Comment").field("text", _.String)
-      schema.model("Todo").oneToManyRelation("comments", "todo", comment).field("a", _.String)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | a: String
+        | comments: [Comment!]!
+        |}
+        |
+        |type Comment {
+        | id: ID! @unique
+        | text: String
+        | todo: Todo
+        |}
+      """.stripMargin
     }
     database.setup(project)
 
@@ -46,9 +56,20 @@ class DeadlockSpec extends FlatSpec with Matchers with Retries with ApiSpecBase 
   }
 
   "creating many node with scalar list values" should "not cause deadlocks" in {
-    val project = SchemaDsl.fromBuilder { schema =>
-      val comment = schema.model("Comment").field("text", _.String)
-      schema.model("Todo").oneToManyRelation("comments", "todo", comment).field("a", _.String).field("tags", _.String, isList = true)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | a: String
+        | tags: [String!]!
+        | comments: [Comment!]!
+        |}
+        |
+        |type Comment {
+        | id: ID! @unique
+        | text: String
+        | todo: Todo
+        |}
+      """.stripMargin
     }
     database.setup(project)
 
@@ -76,9 +97,19 @@ class DeadlockSpec extends FlatSpec with Matchers with Retries with ApiSpecBase 
   }
 
   "updating single item many times" should "not cause deadlocks" in {
-    val project = SchemaDsl.fromBuilder { schema =>
-      val comment = schema.model("Comment").field("text", _.String)
-      schema.model("Todo").oneToManyRelation("comments", "todo", comment).field("a", _.String)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | a: String
+        | comments: [Comment!]!
+        |}
+        |
+        |type Comment {
+        | id: ID! @unique
+        | text: String
+        | todo: Todo
+        |}
+      """.stripMargin
     }
     database.setup(project)
 
@@ -124,9 +155,20 @@ class DeadlockSpec extends FlatSpec with Matchers with Retries with ApiSpecBase 
   }
 
   "updating single item many times with scalar list values" should "not cause deadlocks" in {
-    val project = SchemaDsl.fromBuilder { schema =>
-      val comment = schema.model("Comment").field("text", _.String)
-      schema.model("Todo").oneToManyRelation("comments", "todo", comment).field("a", _.String).field("tags", _.String, isList = true)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | a: String
+        | tags: [String!]!
+        | comments: [Comment!]!
+        |}
+        |
+        |type Comment {
+        | id: ID! @unique
+        | text: String
+        | todo: Todo
+        |}
+      """.stripMargin
     }
     database.setup(project)
 
@@ -175,9 +217,19 @@ class DeadlockSpec extends FlatSpec with Matchers with Retries with ApiSpecBase 
   }
 
   "updating single item and relations many times" should "not cause deadlocks" in {
-    val project = SchemaDsl.fromBuilder { schema =>
-      val comment = schema.model("Comment").field("text", _.String)
-      schema.model("Todo").oneToManyRelation("comments", "todo", comment).field("a", _.String)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | a: String
+        | comments: [Comment!]!
+        |}
+        |
+        |type Comment {
+        | id: ID! @unique
+        | text: String
+        | todo: Todo
+        |}
+      """.stripMargin
     }
     database.setup(project)
 
@@ -228,9 +280,19 @@ class DeadlockSpec extends FlatSpec with Matchers with Retries with ApiSpecBase 
   }
 
   "creating many items with relations" should "not cause deadlocks" in {
-    val project = SchemaDsl.fromBuilder { schema =>
-      val comment = schema.model("Comment").field("text", _.String)
-      schema.model("Todo").oneToManyRelation("comments", "todo", comment).field("a", _.String)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | a: String
+        | comments: [Comment!]!
+        |}
+        |
+        |type Comment {
+        | id: ID! @unique
+        | text: String
+        | todo: Todo
+        |}
+      """.stripMargin
     }
     database.setup(project)
 
@@ -258,9 +320,19 @@ class DeadlockSpec extends FlatSpec with Matchers with Retries with ApiSpecBase 
   }
 
   "deleting many items" should "not cause deadlocks" in {
-    val project = SchemaDsl.fromBuilder { schema =>
-      val comment = schema.model("Comment").field("text", _.String)
-      schema.model("Todo").oneToManyRelation("comments", "todo", comment).field("a", _.String)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | a: String
+        | comments: [Comment!]!
+        |}
+        |
+        |type Comment {
+        | id: ID! @unique
+        | text: String
+        | todo: Todo
+        |}
+      """.stripMargin
     }
     database.setup(project)
 

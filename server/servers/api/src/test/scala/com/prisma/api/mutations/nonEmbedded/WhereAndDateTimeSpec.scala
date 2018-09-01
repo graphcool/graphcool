@@ -12,10 +12,20 @@ class WhereAndDateTimeSpec extends FlatSpec with Matchers with ApiSpecBase {
     val outerWhere = """"2018-12-05T12:34:23.000Z""""
     val innerWhere = """"2019-12-05T12:34:23.000Z""""
 
-    val project = SchemaDsl.fromBuilder { schema =>
-      val note = schema.model("Note").field("outerString", _.String).field("outerDateTime", _.DateTime, isUnique = true)
-      val todo = schema.model("Todo").field_!("innerString", _.String).field("innerDateTime", _.DateTime, isUnique = true)
-      todo.manyToManyRelation("notes", "todos", note)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | innerString: String!
+        | innerDateTime: DateTime @unique
+        | notes: [Note!]!
+        |}
+        |
+        |type Note {
+        | id: ID! @unique
+        | outerString: String
+        | outerDateTime: DateTime @unique
+        | todos: [Todo!]!
+      """.stripMargin
     }
     database.setup(project)
 
@@ -74,9 +84,21 @@ class WhereAndDateTimeSpec extends FlatSpec with Matchers with ApiSpecBase {
     val outerWhere = """"2018-01-03T11:27:38+00:00""""
     val innerWhere = """"2018-01-03T11:27:38+00:00""""
 
-    val project = SchemaDsl.fromBuilder { schema =>
-      val note = schema.model("Note").field("outerString", _.String).field("outerDateTime", _.DateTime, isUnique = true)
-      schema.model("Todo").field_!("innerString", _.String).field("innerDateTime", _.DateTime, isUnique = true).manyToManyRelation("notes", "todos", note)
+    val project = SchemaDsl.fromString() {
+      """type Todo {
+        | id: ID! @unique
+        | innerString: String!
+        | innerDateTime: DateTime @unique
+        | notes: [Note!]!
+        |}
+        |
+        |type Note {
+        | id: ID! @unique
+        | outerString: String
+        | outerDateTime: DateTime @unique
+        | todos: [Todo!]!
+        |}
+      """.stripMargin
     }
     database.setup(project)
 
