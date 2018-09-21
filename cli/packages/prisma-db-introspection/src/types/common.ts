@@ -82,6 +82,14 @@ export interface DBClient {
   end(): Promise<void>
 }
 
+export interface MysqlConnectionDetails {
+  host: string
+  port: number
+  user: string
+  password: string
+  database?: string
+} 
+
 export interface QueryResult {
   rows: any[]
 }

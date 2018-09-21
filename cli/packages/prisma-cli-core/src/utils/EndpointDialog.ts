@@ -11,7 +11,7 @@ import {
 import * as sillyname from 'sillyname'
 import * as path from 'path'
 import * as fs from 'fs'
-import { Introspector, PostgresConnector } from 'prisma-db-introspection'
+import { Introspector, PostgresConnector, MysqlConnector } from 'prisma-db-introspection'
 import * as yaml from 'js-yaml'
 import { Client as PGClient } from 'pg'
 
@@ -283,8 +283,14 @@ export class EndpointDialog {
             ? `Introspecting database`
             : `Connecting to database`,
         )
-        const client = new PGClient(this.replaceLocalDockerHost(credentials))
-        const connector = new PostgresConnector(client)
+        let connector
+        if(credentials.type == 'postgres'){
+            const client = new PGClient(this.replaceLocalDockerHost(credentials))
+            connector = new PostgresConnector(client)
+          } else if(credentials.type == 'mysql'){
+            connector = new MysqlConnector(credentials)
+          
+        }
         const introspector = new Introspector(connector)
         let schemas
         try {
@@ -302,7 +308,9 @@ export class EndpointDialog {
           const schema = credentials.schema || schemas[0]
 
           const { numTables, sdl } = await introspector.introspect(schema)
-          await client.end()
+          if(credentials.type === 'postgres'){
+            //await this.client.end()
+          }
           if (numTables === 0) {
             this.out.log(
               chalk.red(
@@ -410,11 +418,6 @@ export class EndpointDialog {
     const type = await this.askForDatabaseType(introspection)
     const alreadyData = introspection || (await this.askForExistingData())
     const askForSchema = introspection ? true : alreadyData ? true : false
-    if (type === 'mysql' && alreadyData) {
-      throw new Error(
-        `Existing MySQL databases with data are not yet supported.`,
-      )
-    }
     const host = await this.ask({
       message: 'Enter database host',
       key: 'host',
@@ -433,24 +436,21 @@ export class EndpointDialog {
       message: 'Enter database password',
       key: 'password',
     })
-    const database =
-      type === 'postgres'
-        ? await this.ask({
-            message: alreadyData
-              ? `Enter name of existing database`
-              : `Enter database name`,
-            key: 'database',
-          })
-        : null
-    const ssl =
-      type === 'postgres'
-        ? await this.ask({
-            message: 'Use SSL?',
-            inputType: 'confirm',
-            key: 'ssl',
-          })
-        : undefined
-    const schema = askForSchema
+    const database = await this.ask({
+      message: alreadyData
+        ? `Enter name of existing database`
+        : `Enter database name`,
+      key: 'database',
+    })
+        
+    const ssl = await this.ask({
+      message: 'Use SSL?',
+      inputType: 'confirm',
+      key: 'ssl',
+    })
+       
+    const schema = 
+      type === 'postgres' && askForSchema
       ? await this.ask({
           message: `Enter name of existing schema`,
           key: 'schema',
@@ -682,14 +682,14 @@ export class EndpointDialog {
   private async askForDatabaseType(introspect: boolean = false) {
     const choices: any[] = []
 
-    if (!introspect) {
-      choices.push({
-        value: 'mysql',
-        name:
-          'MySQL             MySQL compliant databases like MySQL or MariaDB',
-        short: 'MySQL',
-      })
-    }
+
+    choices.push({
+      value: 'mysql',
+      name:
+        'MySQL             MySQL compliant databases like MySQL or MariaDB',
+      short: 'MySQL',
+    })
+    
 
     choices.push({
       value: 'postgres',

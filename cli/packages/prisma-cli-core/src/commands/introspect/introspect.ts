@@ -1,10 +1,13 @@
 import { Command, flags, Flags } from 'prisma-cli-engine'
 import { EndpointDialog } from '../../utils/EndpointDialog'
+
 import {
   Introspector,
   PostgresConnector,
+  MysqlConnector,
   PrismaDBClient,
 } from 'prisma-db-introspection'
+
 import * as path from 'path'
 import * as fs from 'fs'
 import { prettyTime } from '../../util'
@@ -48,12 +51,22 @@ export default class IntrospectCommand extends Command {
       client = new PrismaDBClient(this.definition)
     }
 
-    const connector = new PostgresConnector(client)
+    const credentials = await endpointDialog.getDatabase(true)
+    
+    let connector
+    if(credentials.type == 'mysql'){
+      connector = new MysqlConnector(credentials)
+    } else if (credentials.type == 'postgres'){
+      const client = new Client(endpointDialog.replaceLocalDockerHost(credentials))
+      connector = new PostgresConnector(client)
+    }
+    
     const introspector = new Introspector(connector)
     let schemas
     const before = Date.now()
     try {
       schemas = await introspector.listSchemas()
+      
     } catch (e) {
       throw new Error(`Could not connect to database. ${e.message}`)
     }
