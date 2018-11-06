@@ -2,6 +2,7 @@ import { readDefinition } from './yaml'
 import { PrismaDefinition } from 'prisma-json-schema'
 import * as fs from 'fs-extra'
 import * as dotenv from 'dotenv'
+import * as dotenvExpand from 'dotenv-expand'
 import * as path from 'path'
 import * as jwt from 'jsonwebtoken'
 import { Args } from './types/common'
@@ -61,7 +62,7 @@ export class PrismaDefinitionClass {
         throw new Error(`--env-file path '${envPath}' does not exist`)
       }
     }
-    dotenv.config({ path: envPath })
+    dotenvExpand(dotenv.config({ path: envPath }))
     if (this.definitionPath) {
       await this.loadDefinition(args)
 
