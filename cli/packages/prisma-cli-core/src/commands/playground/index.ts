@@ -113,7 +113,7 @@ export default class Playground extends Command {
   }: {
     config
     endpoint: string
-    port: string
+    port: number
   }) =>
     new Promise<string>(async (resolve, reject) => {
       const app = express()
