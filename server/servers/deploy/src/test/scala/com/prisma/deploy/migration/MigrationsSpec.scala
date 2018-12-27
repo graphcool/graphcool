@@ -4,7 +4,7 @@ import com.prisma.deploy.connector.{EmptyDatabaseIntrospectionInferrer, FieldReq
 import com.prisma.deploy.migration.inference.{MigrationStepsInferrer, SchemaInferrer}
 import com.prisma.deploy.schema.mutations.{DeployMutation, DeployMutationInput, MutationError, MutationSuccess}
 import com.prisma.deploy.specutils.DeploySpecBase
-import com.prisma.shared.models.ConnectorCapability.{IntIdCapability, MigrationsCapability, RelationLinkTableCapability, UuidIdCapability}
+import com.prisma.shared.models.ConnectorCapability._
 import com.prisma.shared.models.{ConnectorCapabilities, Project, Schema}
 import org.scalatest.{Matchers, WordSpecLike}
 
@@ -743,6 +743,127 @@ class MigrationsSpec extends WordSpecLike with Matchers with DeploySpecBase {
     val result = deploy(dataModel)
     val index  = result.table_!("A").indexes.find(_.columns == Vector("field"))
     index should be(empty)
+  }
+
+  "adding an index must work" in {
+    val initialDataModel =
+      """
+        |type A {
+        |  id: ID! @id
+        |  field: String
+        |  shield: String
+        |}
+      """.stripMargin
+    deploy(initialDataModel)
+
+    val dataModel =
+      """
+        |type A @indexes(value: [
+        |  { fields: ["field" "shield"] name: "A_field_shield_idx" }
+        |]) {
+        |  id: ID! @id
+        |  field: String
+        |  shield: String
+        |}
+      """.stripMargin
+    val result = deploy(dataModel, ConnectorCapabilities(IndexesCapability))
+    val index  = result.table_!("A").indexes.find(_.name == "A_field_shield_idx").get
+
+    index.columns.size should be(2)
+    index.columns should contain("field")
+    index.columns should contain("shield")
+  }
+
+  "deleting an index must work" in {
+    val initialDataModel =
+      """
+        |type A @indexes(value: [
+        |  { fields: ["field" "shield"] name: "A_field_shield_idx" }
+        |]) {
+        |  id: ID! @id
+        |  field: String
+        |  shield: String
+        |}
+      """.stripMargin
+    deploy(initialDataModel, ConnectorCapabilities(IndexesCapability))
+
+    val dataModel =
+      """
+        |type A {
+        |  id: ID! @id
+        |  field: String
+        |  shield: String
+        |}
+      """.stripMargin
+    val result = deploy(dataModel, ConnectorCapabilities(IndexesCapability))
+    val index  = result.table_!("A").indexes.find(_.name == "A_field_shield_idx")
+
+    index should be(None)
+  }
+
+  "adding a field to an index must work" in {
+    val initialDataModel =
+      """
+        |type A @indexes(value: [
+        |  { fields: ["field"] name: "A_field_idx" }
+        |]) {
+        |  id: ID! @id
+        |  field: String
+        |}
+      """.stripMargin
+    var result = deploy(initialDataModel, ConnectorCapabilities(IndexesCapability))
+    var index  = result.table_!("A").indexes.find(_.name == "A_field_idx").get
+
+    index.columns.size should be(1)
+    index.columns should contain("field")
+
+    val dataModel =
+      """
+        |type A @indexes(value: [
+        |  { fields: ["field" "shield"] name: "A_field_idx" }
+        |]) {
+        |  id: ID! @id
+        |  field: String
+        |  shield: String
+        |}
+      """.stripMargin
+    result = deploy(dataModel, ConnectorCapabilities(IndexesCapability))
+    index  = result.table_!("A").indexes.find(_.name == "A_field_idx").get
+
+    index.columns.size should be(2)
+    index.columns should contain("field")
+    index.columns should contain("shield")
+  }
+
+  "renaming an index should work" in {
+    val initialDataModel =
+      """
+        |type A @indexes(value: [
+        |  { fields: ["field"] name: "A_field_idx" }
+        |]) {
+        |  id: ID! @id
+        |  field: String
+        |}
+      """.stripMargin
+
+    deploy(initialDataModel, ConnectorCapabilities(IndexesCapability))
+
+    val dataModel =
+      """
+        |type A @indexes(value: [
+        |  { fields: ["field"] name: "A_derp_idx" }
+        |]) {
+        |  id: ID! @id
+        |  field: String
+        |}
+      """.stripMargin
+    val result = deploy(dataModel, ConnectorCapabilities(IndexesCapability))
+    val index  = result.table_!("A").indexes.find(_.name == "A_derp_idx").get
+    val oldIndex  = result.table_!("A").indexes.find(_.name == "A_field_idx")
+
+    oldIndex should be(None)
+    index.columns.size should be(1)
+    index.columns should contain("field")
   }
 
   def setup() = {

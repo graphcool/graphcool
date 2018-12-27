@@ -18,6 +18,14 @@ object DeployWarnings {
 }
 
 object DeployErrors {
+  def indexesAreNotSupported(objectType: ObjectTypeDefinition): DeployError = {
+    error(objectType, "Indexes are not supported for the connector.")
+  }
+
+  def indexDefinitionMissesRequiredArgument(typeDefinition: TypeDefinition, field: String): DeployError = {
+    error(typeDefinition, s"An index definition in `$typeDefinition` misses a required field `$field`.")
+  }
+
   import com.prisma.deploy.migration.DataSchemaAstExtensions._
 
   def missingIdField(typeDefinition: TypeDefinition): DeployError = {

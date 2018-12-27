@@ -4,10 +4,11 @@ import com.prisma.connector.shared.jdbc.SlickDatabase
 import com.prisma.deploy.connector.DatabaseInspector
 import com.prisma.deploy.connector.jdbc.{DatabaseInspectorImpl, JdbcBase}
 import com.prisma.shared.models.TypeIdentifier.ScalarTypeIdentifier
-import com.prisma.shared.models.{Model, Project, Relation, TypeIdentifier}
+import com.prisma.shared.models._
 import org.jooq.impl.DSL._
 import org.jooq.impl.SQLDataType
 import slick.dbio.{DBIO, DBIOAction, Effect, NoStream}
+import slick.jdbc.PostgresProfile
 
 import scala.concurrent.ExecutionContext
 
@@ -54,6 +55,10 @@ trait JdbcDeployDatabaseMutationBuilder extends JdbcBase {
   def updateRelationTable(projectId: String, previousRelation: Relation, nextRelation: Relation): DBIO[_]
 
   def deleteRelationColumn(projectId: String, model: Model, references: Model, column: String): DBIO[_]
+
+  def createIndex(projectId: String, dbName: String, indexName: String, indexFields: Vector[String]): DBIO[_]
+  def dropIndex(projectId: String, indexName: String): DBIO[_]
+  def alterIndex(projectId: String, oldName: String, newName: String): DBIO[_]
 
   /*
    * Connector-agnostic functions

@@ -1,6 +1,7 @@
 package com.prisma.deploy.connector
 
 import com.prisma.shared.models._
+import com.prisma.shared.models.{Index => IndexModel}
 
 sealed trait DeployMutaction {
   def projectId: String
@@ -28,3 +29,7 @@ case class UpdateRelationTable(projectId: String, previousRelation: Relation, ne
 
 case class CreateInlineRelation(projectId: String, model: Model, references: Model, column: String) extends DeployMutaction
 case class DeleteInlineRelation(projectId: String, model: Model, references: Model, column: String) extends DeployMutaction
+
+case class CreateTableIndex(projectId: String, model: Model, index: IndexModel) extends DeployMutaction
+case class DeleteTableIndex(projectId: String, model: Model, index: IndexModel) extends DeployMutaction
+case class AlterTableIndex(projectId: String, model: Model, oldName: String, newName: String) extends DeployMutaction

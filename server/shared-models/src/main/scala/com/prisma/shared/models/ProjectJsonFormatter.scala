@@ -317,12 +317,23 @@ object ProjectJsonFormatter {
       (JsPath \ "behaviour").writeNullable[FieldBehaviour]
   )(unlift(FieldTemplate.unapply))
 
+  implicit val indexReads: Reads[Index] = (
+    (JsPath \ "fields").read[Vector[String]] and
+      (JsPath \ "name").read[String]
+  )(Index.apply _)
+
+  implicit val indexWrites: Writes[Index] = (
+    (JsPath \ "fields").write[Vector[String]] and
+      (JsPath \ "name").write[String]
+  )(unlift(Index.unapply))
+
   implicit val modelReads: Reads[ModelTemplate] = (
     (JsPath \ "name").read[String] and
       (JsPath \ "stableIdentifier").read[String] and
       (JsPath \ "isEmbedded").readNullable[Boolean].map(_.getOrElse(false)) and
       (JsPath \ "fields").read[List[FieldTemplate]] and
-      (JsPath \ "manifestation").readNullable[ModelManifestation]
+      (JsPath \ "manifestation").readNullable[ModelManifestation] and
+      (JsPath \ "indexes").readNullable[Vector[Index]].map(_.getOrElse(Vector()))
   )(ModelTemplate.apply _)
 
   implicit val modelWrites: Writes[ModelTemplate] = (
@@ -330,7 +341,8 @@ object ProjectJsonFormatter {
       (JsPath \ "stableIdentifier").write[String] and
       (JsPath \ "isEmbedded").write[Boolean] and
       (JsPath \ "fields").write[List[FieldTemplate]] and
-      (JsPath \ "manifestation").writeNullable[ModelManifestation]
+      (JsPath \ "manifestation").writeNullable[ModelManifestation] and
+      (JsPath \ "indexes").write[Vector[Index]]
   )(unlift(ModelTemplate.unapply))
 
   val schemaReads: Reads[Schema] = (

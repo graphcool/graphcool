@@ -9,7 +9,8 @@ case class ModelTemplate(
     stableIdentifier: String,
     isEmbedded: Boolean,
     fieldTemplates: List[FieldTemplate],
-    manifestation: Option[ModelManifestation]
+    manifestation: Option[ModelManifestation],
+    indexes: Vector[Index]
 ) {
   def build(schema: Schema): Model = new Model(this, schema)
 }
@@ -18,7 +19,14 @@ object Model {
   implicit def asModelTemplate(model: Model): ModelTemplate = model.template
 
   val empty: Model = new Model(
-    template = ModelTemplate(name = "", stableIdentifier = "", isEmbedded = false, fieldTemplates = List.empty, manifestation = None),
+    template = ModelTemplate(
+      name = "",
+      stableIdentifier = "",
+      isEmbedded = false,
+      fieldTemplates = List.empty,
+      manifestation = None,
+      indexes = Vector.empty,
+    ),
     schema = Schema.empty
   )
 }
@@ -77,5 +85,6 @@ class Model(
   def getFieldByName(name: String): Option[Field]             = fields.find(_.name == name)
   def getFieldByDBName_!(name: String): Field                 = getFieldByDBName(name).getOrElse(sys.error(s"field $name is not part of the model ${this.name}"))
   def getFieldByDBName(name: String): Option[Field]           = fields.find(_.dbName == name)
-
+  def getIndexByName(name: String): Option[Index]             = indexes.find(_.name == name)
+  def getIndexByName_!(name: String): Index                   = getIndexByName(name).getOrElse(sys.error(s"field $name is not part of the model ${this.name}"))
 }

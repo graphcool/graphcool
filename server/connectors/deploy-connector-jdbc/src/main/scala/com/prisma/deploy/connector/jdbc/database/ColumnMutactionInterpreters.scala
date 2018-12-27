@@ -3,6 +3,60 @@ package com.prisma.deploy.connector.jdbc.database
 import com.prisma.deploy.connector._
 import slick.jdbc.PostgresProfile.api._
 
+case class CreateIndexInterpreter(builder: JdbcDeployDatabaseMutationBuilder) extends SqlMutactionInterpreter[CreateTableIndex] {
+  override def execute(mutaction: CreateTableIndex): DBIO[Any] = {
+    builder.createIndex(
+      projectId = mutaction.projectId,
+      dbName = mutaction.model.dbName,
+      indexName = mutaction.index.name,
+      indexFields = mutaction.index.fields,
+    )
+  }
+
+  override def rollback(mutaction: CreateTableIndex): DBIO[Any] = {
+    builder.dropIndex(
+      projectId = mutaction.projectId,
+      indexName = mutaction.index.name,
+    )
+  }
+}
+
+case class DeleteIndexInterpreter(builder: JdbcDeployDatabaseMutationBuilder) extends SqlMutactionInterpreter[DeleteTableIndex] {
+  override def execute(mutaction: DeleteTableIndex): DBIO[Any] = {
+    builder.dropIndex(
+      projectId = mutaction.projectId,
+      indexName = mutaction.index.name,
+    )
+  }
+
+  override def rollback(mutaction: DeleteTableIndex): DBIO[Any] = {
+    builder.createIndex(
+      projectId = mutaction.projectId,
+      dbName = mutaction.model.dbName,
+      indexName = mutaction.index.name,
+      indexFields = mutaction.index.fields,
+    )
+  }
+}
+
+case class AlterIndexInterpreter(builder: JdbcDeployDatabaseMutationBuilder) extends SqlMutactionInterpreter[AlterTableIndex] {
+  override def execute(mutaction: AlterTableIndex): DBIO[Any] = {
+    builder.alterIndex(
+      projectId = mutaction.projectId,
+      oldName = mutaction.oldName,
+      newName = mutaction.newName
+    )
+  }
+
+  override def rollback(mutaction: AlterTableIndex): DBIO[Any] = {
+    builder.alterIndex(
+      projectId = mutaction.projectId,
+      oldName = mutaction.newName,
+      newName = mutaction.oldName
+    )
+  }
+}
+
 case class CreateColumnInterpreter(builder: JdbcDeployDatabaseMutationBuilder) extends SqlMutactionInterpreter[CreateColumn] {
   override def execute(mutaction: CreateColumn) = {
     builder.createColumn(

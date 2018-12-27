@@ -94,6 +94,23 @@ case class MigrationStepMapperImpl(projectId: String) extends MigrationStepMappe
       val relation = previousSchema.getRelationByName_!(x.name)
       Vector(deleteRelation(relation))
 
+    case x: CreateIndex => {
+      val model = nextSchema.getModelByName_!(x.modelName)
+      val index = model.getIndexByName_!(x.indexName)
+      Vector(CreateTableIndex(projectId, model, index))
+    }
+
+    case x: AlterIndex => {
+      val model = nextSchema.getModelByName_!(x.modelName)
+      Vector(AlterTableIndex(projectId, model, x.oldName, x.newName))
+    }
+
+    case x: DeleteIndex => {
+      val model = previousSchema.getModelByName_!(x.modelName)
+      val index = model.getIndexByName_!(x.indexName)
+      Vector(DeleteTableIndex(projectId, model, index))
+    }
+
     case x: UpdateRelation =>
       val previousRelation      = previousSchema.getRelationByName_!(x.name)
       val nextRelation          = nextSchema.getRelationByName_!(x.finalName)

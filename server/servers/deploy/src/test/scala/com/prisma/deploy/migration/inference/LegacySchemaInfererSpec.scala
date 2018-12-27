@@ -5,7 +5,7 @@ import com.prisma.deploy.migration.validation.LegacyDataModelValidator
 import com.prisma.deploy.specutils.DeploySpecBase
 import com.prisma.shared.models.ConnectorCapability.{LegacyDataModelCapability, MigrationsCapability}
 import com.prisma.shared.models.Manifestations.{EmbeddedRelationLink, FieldManifestation, ModelManifestation, RelationTable}
-import com.prisma.shared.models.{ConnectorCapabilities, ConnectorCapability, RelationSide, Schema}
+import com.prisma.shared.models._
 import com.prisma.shared.schema_dsl.{SchemaDsl, TestProject}
 import org.scalatest.{Matchers, WordSpec}
 

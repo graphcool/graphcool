@@ -13,7 +13,7 @@ trait DirectiveBase extends BooleanUtils with SharedDirectiveValidation {
 }
 
 object TypeDirective {
-  val all = Vector(TypeDbDirective, EmbeddedDirective, LinkTableDirective)
+  val all = Vector(TypeDbDirective, EmbeddedDirective, LinkTableDirective, IndexesDirective)
 }
 
 trait TypeDirective[T] extends DirectiveBase {
@@ -32,8 +32,8 @@ trait TypeDirective[T] extends DirectiveBase {
 }
 
 trait FieldDirective[T] extends DirectiveBase {
-  def requiredArgs(capabilities: ConnectorCapabilities): Vector[DirectiveArgument[_]]
-  def optionalArgs(capabilities: ConnectorCapabilities): Vector[DirectiveArgument[_]]
+  def requiredArgs(capabilities: ConnectorCapabilities): Vector[DirectiveArgument[_]] = Vector()
+  def optionalArgs(capabilities: ConnectorCapabilities): Vector[DirectiveArgument[_]] = Vector()
 
   // gets called if the directive was found. Can return an error message
   def validate(

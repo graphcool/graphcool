@@ -167,7 +167,8 @@ case class LegacyDataModelValidator(
         tableName = definition.tableNameDirective,
         isEmbedded = definition.isEmbedded,
         isRelationTable = false,
-        fieldFn = prismaFields
+        fieldFn = prismaFields,
+        indexes = Vector()
       )(_)
     }
 

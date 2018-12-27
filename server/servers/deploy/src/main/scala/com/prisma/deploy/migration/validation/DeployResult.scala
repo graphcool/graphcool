@@ -15,6 +15,10 @@ object DeployError {
     DeployError(`type`, description, None)
   }
 
+  def apply(typeDef: ObjectTypeDefinition, description: String): DeployError = {
+    DeployError(typeDef.name, description, None)
+  }
+
   def apply(fieldAndType: FieldAndType, description: String): DeployError = {
     apply(fieldAndType.objectType, fieldAndType.fieldDef, description)
   }

@@ -7,6 +7,43 @@ class MigrationStepsJsonFormatterSpec extends FlatSpec with Matchers {
 
   import MigrationStepsJsonFormatter._
 
+  "CreateIndex" should "be readable" in {
+    val json = Json.parse(
+      """
+        |{
+        |  "modelName": "foo",
+        |  "indexName": "herpderp"
+        |}
+      """.stripMargin)
+
+    json.as[CreateIndex] should be(CreateIndex(modelName = "foo", indexName = "herpderp"))
+  }
+
+  "DeleteIndex" should "be readable" in {
+    val json = Json.parse(
+      """
+        |{
+        |  "modelName": "foo",
+        |  "indexName": "herpderp"
+        |}
+      """.stripMargin)
+
+    json.as[DeleteIndex] should be(DeleteIndex(modelName = "foo", indexName = "herpderp"))
+  }
+
+  "AlterIndex" should "be readable" in {
+    val json = Json.parse(
+      """
+        |{
+        |  "modelName": "foo",
+        |  "oldName": "herpderp",
+        |  "newName": "narf"
+        |}
+      """.stripMargin)
+
+    json.as[AlterIndex] should be(AlterIndex(modelName = "foo", oldName = "herpderp", newName = "narf"))
+  }
+
   "CreateRelation" should "be readable in the format of January 2018" in {
     val json = Json.parse("""
         |{

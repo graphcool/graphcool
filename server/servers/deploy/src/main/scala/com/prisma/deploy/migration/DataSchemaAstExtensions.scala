@@ -76,6 +76,7 @@ object DataSchemaAstExtensions {
     }
 
     def isEmbedded: Boolean                          = objectType.directives.exists(_.name == "embedded")
+    def hasIndexes: Boolean                          = objectType.directives.exists(_.name == "indexes")
     def field_!(name: String): FieldDefinition       = field(name).getOrElse(sys.error(s"Could not find the field $name on the type ${objectType.name}"))
     def field(name: String): Option[FieldDefinition] = objectType.fields.find(_.name == name)
 
@@ -222,6 +223,13 @@ object DataSchemaAstExtensions {
   }
 
   implicit class CoolValue(val value: Value) extends AnyVal {
+    def asStringVector: Vector[String] = {
+      value match {
+        case value: ListValue => value.values.map(_.asString)
+        case _                => sys.error("This value is not a list.")
+      }
+    }
+
     def asString = {
       value match {
         case value: EnumValue       => value.value

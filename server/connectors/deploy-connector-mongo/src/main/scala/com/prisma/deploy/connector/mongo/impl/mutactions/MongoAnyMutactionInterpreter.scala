@@ -23,6 +23,9 @@ object MongoAnyMutactionInterpreter extends MongoMutactionInterpreter[DeployMuta
       case x: DeleteRelationTable   => DeleteRelationInterpreter.execute(x)
       case x: CreateInlineRelation  => NoAction.unit
       case x: DeleteInlineRelation  => NoAction.unit
+      case x: CreateTableIndex      => NoAction.unit
+      case x: DeleteTableIndex      => NoAction.unit
+      case x: AlterTableIndex       => NoAction.unit
     }
   }
 
@@ -45,6 +48,9 @@ object MongoAnyMutactionInterpreter extends MongoMutactionInterpreter[DeployMuta
       case x: DeleteRelationTable   => DeleteRelationInterpreter.execute(x)
       case x: CreateInlineRelation  => NoAction.unit
       case x: DeleteInlineRelation  => NoAction.unit
+      case x: CreateTableIndex      => NoAction.unit
+      case x: DeleteTableIndex      => NoAction.unit
+      case x: AlterTableIndex       => NoAction.unit
     }
   }
 }

@@ -398,7 +398,8 @@ object SchemaDsl extends AwaitUtils {
         stableIdentifier = Cuid.createCuid(),
         isEmbedded = isEmbedded,
         fieldTemplates = fields.toList,
-        manifestation = None
+        manifestation = None,
+        indexes = Vector.empty,
       )
     }
   }

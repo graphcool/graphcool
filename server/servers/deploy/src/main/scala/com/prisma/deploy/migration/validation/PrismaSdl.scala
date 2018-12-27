@@ -28,7 +28,8 @@ case class PrismaType(
     tableName: Option[String],
     isEmbedded: Boolean,
     isRelationTable: Boolean,
-    fieldFn: Vector[PrismaType => PrismaField]
+    fieldFn: Vector[PrismaType => PrismaField],
+    indexes: Vector[PrismaIndex]
 )(val sdl: PrismaSdl) {
   val fields: Vector[PrismaField] = fieldFn.map(_.apply(this))
 
@@ -54,6 +55,8 @@ sealed trait PrismaField {
   def isRequired: Boolean
   def tpe: PrismaType
 }
+
+case class PrismaIndex(fields: Vector[String], name: String)
 
 case class ScalarPrismaField(
     name: String,

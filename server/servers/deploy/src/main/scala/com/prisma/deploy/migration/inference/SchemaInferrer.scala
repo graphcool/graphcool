@@ -87,7 +87,8 @@ case class SchemaInferrerImpl(
         stableIdentifier = stableIdentifier,
         isEmbedded = prismaType.isEmbedded,
         fieldTemplates = fieldsForType(prismaType).toList ++ hiddenReservedFields,
-        manifestation = manifestation
+        manifestation = manifestation,
+        indexes = prismaType.indexes.map(i => Index(name = i.name, fields = i.fields))
       )
     }
   }

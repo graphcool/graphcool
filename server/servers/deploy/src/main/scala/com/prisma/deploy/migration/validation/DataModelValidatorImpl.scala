@@ -116,7 +116,8 @@ case class DataModelValidatorImpl(
         tableName = TypeDbDirective.value(doc, typeDef, capabilities),
         isEmbedded = EmbeddedDirective.value(doc, typeDef, capabilities).getOrElse(false),
         isRelationTable = typeDef.isRelationTable,
-        fieldFn = prismaFields ++ extraField
+        fieldFn = prismaFields ++ extraField,
+        indexes = IndexesDirective.value(doc, typeDef, capabilities).getOrElse(Vector())
       )(_)
     }
 
@@ -174,9 +175,9 @@ case class DataModelValidatorImpl(
 
   def validateTypeDirectives(): Seq[DeployError] = {
     for {
-      objectType <- doc.objectTypes
-      directive  <- objectType.directives
-      validator  <- TypeDirective.all
+      objectType   <- doc.objectTypes
+      directive    <- objectType.directives
+      validator    <- TypeDirective.all
       if directive.name == validator.name
       duplicateErrors  = validateDirectiveUniqueness(objectType)
       validationErrors = validator.validate(doc, objectType, directive, capabilities)

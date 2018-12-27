@@ -107,6 +107,34 @@ object MigrationStepsJsonFormatter extends DefaultReads {
     OFormat(reads, writes)
   }
 
+  implicit val createIndexFormat: OFormat[CreateIndex] = {
+    val format: OFormat[CreateIndex] = (
+      (JsPath \ "modelName").format[String] and
+        (JsPath \ "indexName").format[String]
+      )(CreateIndex.apply, unlift(CreateIndex.unapply))
+
+    format
+  }
+
+  implicit val deleteIndexFormat: OFormat[DeleteIndex] = {
+    val format: OFormat[DeleteIndex] = (
+      (JsPath \ "modelName").format[String] and
+        (JsPath \ "indexName").format[String]
+      )(DeleteIndex.apply, unlift(DeleteIndex.unapply))
+
+    format
+  }
+
+  implicit val alterIndexFormat: OFormat[AlterIndex] = {
+    val format: OFormat[AlterIndex] =
+      ((JsPath \ "modelName").format[String] and
+        (JsPath \ "oldName").format[String] and
+        (JsPath \ "newName").format[String]
+        )(AlterIndex.apply, unlift(AlterIndex.unapply))
+
+    format
+  }
+
   implicit val migrationStepFormat: Format[MigrationStep] = new Format[MigrationStep] {
     val discriminatorField = "discriminator"
 
@@ -125,6 +153,9 @@ object MigrationStepsJsonFormatter extends DefaultReads {
         case "DeleteRelation" => deleteRelationFormat.reads(json)
         case "UpdateRelation" => updateRelationFormat.reads(json)
         case "UpdateSecrets"  => updateSecretsFormat.reads(json)
+        case "CreateIndex"    => createIndexFormat.reads(json)
+        case "DeleteIndex"    => deleteIndexFormat.reads(json)
+        case "AlterIndex"     => alterIndexFormat.reads(json)
       }
     }
 
@@ -143,6 +174,9 @@ object MigrationStepsJsonFormatter extends DefaultReads {
         case x: DeleteRelation => deleteRelationFormat.writes(x)
         case x: UpdateRelation => updateRelationFormat.writes(x)
         case x: UpdateSecrets  => updateSecretsFormat.writes(x)
+        case x: CreateIndex    => createIndexFormat.writes(x)
+        case x: DeleteIndex    => deleteIndexFormat.writes(x)
+        case x: AlterIndex     => alterIndexFormat.writes(x)
       }
       withOutDiscriminator ++ Json.obj(discriminatorField -> step.getClass.getSimpleName)
     }

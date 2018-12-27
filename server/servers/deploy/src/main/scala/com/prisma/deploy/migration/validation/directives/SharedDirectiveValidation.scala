@@ -10,6 +10,13 @@ trait SharedDirectiveValidation {
     }
   }
 
+  def validateStringVectorValue(value: sangria.ast.Value): Option[String] = {
+    value match {
+      case l: sangria.ast.ListValue   => l.values.flatMap(validateStringValue).headOption
+      case _                          => Some("This argument must be a List.")
+    }
+  }
+
   def validateIntValue(value: sangria.ast.Value): Option[String] = {
     value match {
       case _: sangria.ast.IntValue    => None

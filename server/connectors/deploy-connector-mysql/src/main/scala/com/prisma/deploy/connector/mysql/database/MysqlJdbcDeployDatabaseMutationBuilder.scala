@@ -2,7 +2,7 @@ package com.prisma.deploy.connector.mysql.database
 
 import com.prisma.connector.shared.jdbc.SlickDatabase
 import com.prisma.deploy.connector.jdbc.database.{JdbcDeployDatabaseMutationBuilder, TypeMapper}
-import com.prisma.shared.models.{Model, Project, Relation, TypeIdentifier}
+import com.prisma.shared.models._
 import com.prisma.shared.models.TypeIdentifier.ScalarTypeIdentifier
 import com.prisma.utils.boolean.BooleanUtils
 import org.jooq.impl.DSL
@@ -200,4 +200,8 @@ case class MysqlJdbcDeployDatabaseMutationBuilder(
   override def removeUniqueConstraint(projectId: String, tableName: String, columnName: String): DBIO[_] = {
     sqlu"ALTER TABLE #${qualify(projectId, tableName)} DROP INDEX #${qualify(s"${columnName}_UNIQUE")}"
   }
+
+  override def createIndex(projectId: String, dbName: String, indexName: String, indexFields: Vector[String]): DBIO[_] = ???
+  override def dropIndex(projectId: String, indexName: String): DBIO[_] = ???
+  override def alterIndex(projectId: String, oldName: String, newName: String): DBIO[_] = ???
 }

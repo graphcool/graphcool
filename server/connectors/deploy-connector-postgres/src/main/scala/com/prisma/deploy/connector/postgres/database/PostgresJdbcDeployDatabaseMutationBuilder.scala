@@ -2,7 +2,7 @@ package com.prisma.deploy.connector.postgres.database
 
 import com.prisma.connector.shared.jdbc.SlickDatabase
 import com.prisma.deploy.connector.jdbc.database.{JdbcDeployDatabaseMutationBuilder, TypeMapper}
-import com.prisma.shared.models.{Model, Project, Relation}
+import com.prisma.shared.models.{Index, Model, Project, Relation}
 import com.prisma.shared.models.TypeIdentifier.ScalarTypeIdentifier
 import com.prisma.utils.boolean.BooleanUtils
 import org.jooq.impl.DSL
@@ -173,5 +173,18 @@ case class PostgresJdbcDeployDatabaseMutationBuilder(
 
   override def removeUniqueConstraint(projectId: String, tableName: String, columnName: String): DBIO[_] = {
     sqlu"""DROP INDEX #${qualify(projectId, s"$projectId.$tableName.$columnName._UNIQUE")}"""
+  }
+
+  override def createIndex(projectId: String, dbName: String, indexName: String, indexFields: Vector[String]): DBIO[_] = {
+    val fields = indexFields.mkString(",")
+    sqlu"""CREATE INDEX #${qualify(indexName)} ON #${qualify(projectId, dbName)} (#$fields)"""
+  }
+
+  override def dropIndex(projectId: String, indexName: String): DBIO[_] = {
+    sqlu"""DROP INDEX #${qualify(projectId, indexName)}"""
+  }
+
+  override def alterIndex(projectId: String, oldName: String, newName: String): DBIO[_] = {
+    sqlu"""ALTER INDEX #${qualify(projectId, oldName)} RENAME TO #${qualify(newName)}"""
   }
 }

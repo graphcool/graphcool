@@ -16,7 +16,6 @@ object TypeDbDirective extends TypeDirective[String] {
   override def value(document: Document, typeDef: ObjectTypeDefinition, capabilities: ConnectorCapabilities) = {
     typeDef.dbName
   }
-
 }
 
 object FieldDbDirective extends FieldDirective[String] {

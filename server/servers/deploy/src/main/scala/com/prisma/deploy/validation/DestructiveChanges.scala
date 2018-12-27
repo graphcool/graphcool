@@ -25,19 +25,22 @@ case class DestructiveChanges(clientDbQueries: ClientDbQueries, project: Project
 
   private def checkAgainstExistingData: Future[Vector[DeployResult]] = {
     val checkResults = steps.map {
-      case x: CreateModel    => validationSuccessful
+      case _: CreateModel    => validationSuccessful
       case x: DeleteModel    => deleteModelValidation(x)
-      case x: UpdateModel    => validationSuccessful
+      case _: UpdateModel    => validationSuccessful
       case x: CreateField    => createFieldValidation(x)
       case x: DeleteField    => deleteFieldValidation(x)
       case x: UpdateField    => updateFieldValidation(x)
-      case x: CreateEnum     => validationSuccessful
+      case _: CreateEnum     => validationSuccessful
       case x: DeleteEnum     => deleteEnumValidation(x)
       case x: UpdateEnum     => updateEnumValidation(x)
       case x: CreateRelation => createRelationValidation(x)
       case x: DeleteRelation => deleteRelationValidation(x)
       case x: UpdateRelation => updateRelationValidation(x)
-      case x: UpdateSecrets  => validationSuccessful
+      case _: UpdateSecrets  => validationSuccessful
+      case _: CreateIndex    => validationSuccessful
+      case _: DeleteIndex    => validationSuccessful
+      case _: AlterIndex     => validationSuccessful
     }
 
     Future.sequence(checkResults).map(_.flatten)

@@ -1,12 +1,16 @@
 package com.prisma.deploy.migration.inference
 
+import com.prisma.deploy.connector.InferredTables
+import com.prisma.deploy.migration.validation.DataModelValidatorImpl
 import com.prisma.deploy.specutils.DeploySpecBase
+import com.prisma.shared.models.ConnectorCapability.IndexesCapability
 import com.prisma.shared.models._
-import com.prisma.shared.schema_dsl.SchemaDsl
+import com.prisma.shared.schema_dsl.{SchemaDsl, TestProject}
 import com.prisma.shared.schema_dsl.SchemaDsl.SchemaBuilder
 import org.scalatest.{FlatSpec, Matchers}
 
 class MigrationStepsInferrerSpec extends FlatSpec with Matchers with DeploySpecBase {
+  val emptyProject = TestProject.empty
 
   /**
     * Basic tests
@@ -419,5 +423,200 @@ class MigrationStepsInferrerSpec extends FlatSpec with Matchers with DeploySpecB
         name = "TodoStatus"
       )
     )
+  }
+
+  "Adding an index" should "create a CreateIndex step" in {
+    val renames = SchemaMapping(
+      enums = Vector()
+    )
+
+    val previousTypes =
+      """|type Todo {
+         |  id: ID! @id
+         |  name: String!
+         |}
+         |""".stripMargin
+
+    val previousSchema = infer(
+      emptyProject.schema,
+      previousTypes,
+      capabilities = ConnectorCapabilities(IndexesCapability),
+    )
+
+    val nextTypes =
+      """|type Todo @indexes(value: [
+         |  { fields: ["name"] name: "Todo_name_idx" }
+         |]) {
+         |  id: ID! @id
+         |  name: String!
+         |}
+         |""".stripMargin
+
+    val nextSchema = infer(
+      emptyProject.schema,
+      nextTypes,
+      capabilities = ConnectorCapabilities(IndexesCapability),
+    )
+
+    val steps = MigrationStepsInferrerImpl(previousSchema, nextSchema, renames).evaluate()
+
+    steps should have(size(1))
+    steps should contain(
+      CreateIndex(
+        modelName = "Todo",
+        indexName = "Todo_name_idx",
+      )
+    )
+  }
+
+  "Removing an index" should "create a DeleteIndex step" in {
+    val renames = SchemaMapping(
+      enums = Vector()
+    )
+
+    val previousTypes =
+      """|type Todo @indexes(value: [
+         |  { fields: ["name"] name: "Todo_name_idx" }
+         |]) {
+         |  id: ID! @id
+         |  name: String!
+         |}
+         |""".stripMargin
+
+    val previousSchema = infer(
+      emptyProject.schema,
+      previousTypes,
+      capabilities = ConnectorCapabilities(IndexesCapability),
+    )
+
+    val nextTypes =
+      """|type Todo {
+         |  id: ID! @id
+         |  name: String!
+         |}
+         |""".stripMargin
+
+    val nextSchema = infer(
+      emptyProject.schema,
+      nextTypes,
+      capabilities = ConnectorCapabilities(IndexesCapability),
+    )
+
+
+    val steps = MigrationStepsInferrerImpl(previousSchema, nextSchema, renames).evaluate()
+
+    steps should have(size(1))
+    steps should contain(
+      DeleteIndex(
+        modelName = "Todo",
+        indexName = "Todo_name_idx",
+      )
+    )
+  }
+
+  "Renaming an index" should "create an AlterIndex step" in {
+    val renames = SchemaMapping(
+      enums = Vector()
+    )
+
+    val previousTypes =
+      """|type Todo @indexes(value: [
+         |  { fields: ["name"] name: "Todo_name_idx" }
+         |]) {
+         |  id: ID! @id
+         |  name: String!
+         |}
+         |""".stripMargin
+
+    val previousSchema = infer(
+      emptyProject.schema,
+      previousTypes,
+      capabilities = ConnectorCapabilities(IndexesCapability),
+    )
+
+    val nextTypes =
+      """|type Todo @indexes(value: [
+         |  { fields: ["name"] name: "Todo_renamed_idx" }
+         |]) {
+         |  id: ID! @id
+         |  name: String!
+         |}
+         |""".stripMargin
+
+    val nextSchema = infer(
+      emptyProject.schema,
+      nextTypes,
+      capabilities = ConnectorCapabilities(IndexesCapability),
+    )
+
+    val steps = MigrationStepsInferrerImpl(previousSchema, nextSchema, renames).evaluate()
+
+    steps should have(size(1))
+    steps should contain(
+      AlterIndex(
+        modelName = "Todo",
+        oldName = "Todo_name_idx",
+        newName = "Todo_renamed_idx",
+      )
+    )
+  }
+
+  "Renaming an index and changing the fields" should "create an CreateIndex and DeleteIndex step" in {
+    val renames = SchemaMapping(
+      enums = Vector()
+    )
+
+    val previousTypes =
+      """|type Todo @indexes(value: [
+         |  { fields: ["name"] name: "Todo_name_idx" }
+         |]) {
+         |  id: ID! @id
+         |  name: String!
+         |  gender: String!
+         |}
+         |""".stripMargin
+
+    val previousSchema = infer(
+      emptyProject.schema,
+      previousTypes,
+      capabilities = ConnectorCapabilities(IndexesCapability),
+    )
+
+    val nextTypes =
+      """|type Todo @indexes(value: [
+         |  { fields: ["name", "gender"] name: "Todo_renamed_idx" }
+         |]) {
+         |  id: ID! @id
+         |  name: String!
+         |  gender: String!
+         |}
+         |""".stripMargin
+
+    val nextSchema = infer(
+      emptyProject.schema,
+      nextTypes,
+      capabilities = ConnectorCapabilities(IndexesCapability),
+    )
+
+    val steps = MigrationStepsInferrerImpl(previousSchema, nextSchema, renames).evaluate()
+
+    steps should have(size(2))
+    steps should contain(
+      DeleteIndex(
+        modelName = "Todo",
+        indexName = "Todo_name_idx",
+      )
+    )
+    steps should contain(
+      CreateIndex(
+        modelName = "Todo",
+        indexName = "Todo_renamed_idx",
+      )
+    )
+  }
+
+  def infer(schema: Schema, types: String, mapping: SchemaMapping = SchemaMapping.empty, capabilities: ConnectorCapabilities): Schema = {
+    val prismaSdl = DataModelValidatorImpl.validate(types, deployConnector.fieldRequirements, capabilities).get
+    SchemaInferrer(capabilities).infer(schema, mapping, prismaSdl, InferredTables.empty)
   }
 }

@@ -3,9 +3,9 @@ package com.prisma.deploy.migration.inference
 import com.prisma.deploy.connector.InferredTables
 import com.prisma.deploy.migration.validation.DataModelValidatorImpl
 import com.prisma.deploy.specutils.DeploySpecBase
-import com.prisma.shared.models.ConnectorCapability.{EmbeddedTypesCapability, MigrationsCapability, RelationLinkListCapability, RelationLinkTableCapability}
+import com.prisma.shared.models.ConnectorCapability._
 import com.prisma.shared.models.Manifestations.{EmbeddedRelationLink, FieldManifestation, ModelManifestation, RelationTable}
-import com.prisma.shared.models.{ConnectorCapabilities, ConnectorCapability, RelationSide, Schema}
+import com.prisma.shared.models._
 import com.prisma.shared.schema_dsl.{SchemaDsl, TestProject}
 import org.scalatest.{Matchers, WordSpec}
 
@@ -555,6 +555,29 @@ class SchemaInferrerSpec extends WordSpec with Matchers with DeploySpecBase {
     val schema  = infer(emptyProject.schema, types, capabilities = ConnectorCapabilities.empty)
     val idField = schema.getModelByName_!("Todo").getFieldByName_!("id")
     idField.isUnique should be(true)
+  }
+
+  "should include indexes" in {
+    val types =
+      """|type Todo @indexes(value: [
+         |  { fields: ["name"] name: "Todo_name_idx" }
+         |]) {
+         |  id: ID! @id
+         |  name: String!
+         |}
+         |""".stripMargin
+
+    val schema = infer(
+      emptyProject.schema,
+      types,
+      capabilities = ConnectorCapabilities(IndexesCapability),
+    )
+
+    val todo    = schema.getModelByName_!("Todo")
+    val indexes = todo.indexes
+
+    indexes.size should be(1)
+    indexes should contain(Index(name = "Todo_name_idx", fields = Vector("name")))
   }
 
   def infer(schema: Schema, types: String, mapping: SchemaMapping = SchemaMapping.empty, capabilities: ConnectorCapabilities): Schema = {

@@ -41,7 +41,8 @@ case class MigrationStepsInferrerImpl(previousSchema: Schema, nextSchema: Schema
     * all steps, instead of knowing the next project state as well.
     */
   def evaluate(): Vector[MigrationStep] = {
-    relationsToDelete ++
+    indexesToDelete ++
+      relationsToDelete ++
       fieldsToDelete ++
       modelsToDelete ++
       enumsToDelete ++
@@ -53,7 +54,9 @@ case class MigrationStepsInferrerImpl(previousSchema: Schema, nextSchema: Schema
       enumsToCreate ++
       modelsToCreate ++
       fieldsToCreate ++
-      relationsToCreate
+      relationsToCreate ++
+      indexesToAlter ++
+      indexesToCreate
   }
 
   lazy val modelsToCreate: Vector[CreateModel] = {
@@ -147,6 +150,40 @@ case class MigrationStepsInferrerImpl(previousSchema: Schema, nextSchema: Schema
       if relationNotInPreviousSchema(previousSchema, nextSchema = nextSchema, nextRelation, renames.getPreviousModelName, renames.getPreviousRelationName)
     } yield {
       CreateRelation(name = nextRelation.name)
+    }
+  }
+
+  lazy val indexesToDelete: Vector[DeleteIndex] = {
+    for {
+      previousModel <- previousSchema.models.toVector
+      nextModel <- nextSchema.getModelByName(renames.getNextModelName(previousModel.name)).toVector
+      deletedIndex <- previousModel.indexes.diff(nextModel.indexes)
+      if (!indexesToAlter.exists(i => (i.modelName == nextModel.name && i.oldName == deletedIndex.name)))
+    } yield {
+      DeleteIndex(modelName = previousModel.name, indexName = deletedIndex.name)
+    }
+  }
+
+  lazy val indexesToCreate: Vector[CreateIndex] = {
+    for {
+      previousModel <- previousSchema.models.toVector
+      nextModel <- nextSchema.getModelByName(renames.getNextModelName(previousModel.name)).toVector
+      createdIndex <- nextModel.indexes.diff(previousModel.indexes)
+      if (!indexesToAlter.exists(i => (i.modelName == nextModel.name && i.newName == createdIndex.name)))
+    } yield {
+      CreateIndex(modelName = nextModel.name, indexName = createdIndex.name)
+    }
+  }
+
+  lazy val indexesToAlter: Vector[AlterIndex] = {
+    for {
+      previousModel <- previousSchema.models.toVector
+      nextModel <- nextSchema.getModelByName(renames.getNextModelName(previousModel.name)).toVector
+      nextIndex <- nextModel.indexes
+      previousIndex <- previousModel.indexes.find(_.fields == nextIndex.fields).toVector
+      if (nextIndex.name != previousIndex.name)
+    } yield {
+      AlterIndex(modelName = nextModel.name, oldName = previousIndex.name, newName = nextIndex.name)
     }
   }
 

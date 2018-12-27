@@ -76,6 +76,10 @@ case class CreateModel(name: String)                  extends ModelMigrationStep
 case class DeleteModel(name: String)                  extends ModelMigrationStep
 case class UpdateModel(name: String, newName: String) extends ModelMigrationStep
 
+case class CreateIndex(modelName: String, indexName: String) extends ModelMigrationStep
+case class DeleteIndex(modelName: String, indexName: String) extends ModelMigrationStep
+case class AlterIndex(modelName: String, oldName: String, newName: String) extends ModelMigrationStep
+
 sealed trait FieldMigrationStep                     extends MigrationStep
 case class CreateField(model: String, name: String) extends FieldMigrationStep
 case class DeleteField(model: String, name: String) extends FieldMigrationStep
