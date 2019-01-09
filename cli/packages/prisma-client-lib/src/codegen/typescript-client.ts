@@ -184,8 +184,6 @@ ${this.renderAtLeastOne()}
 
 export interface Exists {\n${this.renderExists()}\n}
 
-export interface Node {}
-
 export type FragmentableArray<T> = Promise<Array<T>> & Fragmentable
 
 export interface Fragmentable {
@@ -548,7 +546,7 @@ export const prisma = new Prisma()`
     }
 
     return this.renderInterfaceWrapper(
-      `${type.name}${node ? '' : ''}`,
+      type.name,
       type.description!,
       interfaces,
       fieldDefinition,
@@ -762,7 +760,9 @@ ${fieldDefinition}
           {
             name: 'Fragmentable',
           },
-        ].concat(interfaces)
+          // Filter out 'Node' since promise or subscription interface
+          // shouldn't extend it directly
+        ].concat(interfaces.filter(i => i.name !== 'Node'))
       : interfaces
 
     return `${this.renderDescription(typeDescription)}${
@@ -771,7 +771,7 @@ ${fieldDefinition}
         ? `export type ${typeName} = AtLeastOne<{
         ${fieldDefinition.replace('?:', ':')}
       }>`
-        : `export interface ${typeName}${typeName === 'Node' ? 'Node' : ''}${
+        : `export interface ${typeName}${
             promise && !subscription ? 'Promise' : ''
           }${subscription ? 'Subscription' : ''}${
             actualInterfaces.length > 0
