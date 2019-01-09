@@ -5,9 +5,9 @@ Object {
   "input": Object {
     "choice": "local",
     "existingData": false,
-    "folderName": "some-folder",
     "localClusterRunning": false,
     "loggedIn": false,
+    "serviceName": "some-folder",
   },
   "result": Object {
     "cluster": Object {
@@ -76,9 +76,9 @@ Object {
   "input": Object {
     "choice": "local",
     "existingData": false,
-    "folderName": "some-folder",
     "localClusterRunning": true,
     "loggedIn": false,
+    "serviceName": "some-folder",
   },
   "result": Object {
     "cluster": Object {

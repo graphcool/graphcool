@@ -29,7 +29,7 @@ describe('endpoint dialog', () => {
     const input = {
       choice: 'local',
       loggedIn: false,
-      folderName: 'some-folder',
+      serviceName: 'some-folder',
       localClusterRunning: false,
       existingData: false,
     }
@@ -40,12 +40,17 @@ describe('endpoint dialog', () => {
     const input = {
       choice: 'local',
       loggedIn: false,
-      folderName: 'some-folder',
+      serviceName: 'some-folder',
       localClusterRunning: true,
       existingData: false,
     }
     const result = await dialog.handleChoice(input)
     expect({ input, result: normalizeResult(result) }).toMatchSnapshot()
+  })
+  test('propose service name', () => {
+    const endpointDialog = makeDialog()
+    expect(endpointDialog.proposeServiceName('/Users/Peter/workspace/webshop')).toBe('webshop')
+    expect(endpointDialog.proposeServiceName('/Users/Peter/workspace/webshop/prisma')).toBe('webshop')
   })
 })
 
