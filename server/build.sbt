@@ -33,7 +33,7 @@ def commonDockerImageSettings(imageName: String) = commonServerSettings ++ Seq(
     val targetDir = "/app"
 
     new Dockerfile {
-      from("anapsix/alpine-java")
+      from("openjdk:8-slim")
       copy(appDir, targetDir)
       copy(prerunHookFile , s"$targetDir/prerun_hook.sh")
       runShell(s"touch", s"$targetDir/start.sh")

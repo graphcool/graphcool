@@ -2,7 +2,7 @@
 version: "3"
 services:
   postgres:
-    image: timms/postgres-logging:10.3
+    image: postgres:10
     container_name: psql
     restart: always
     command: postgres -c 'max_connections=1000'
@@ -11,3 +11,5 @@ services:
       POSTGRES_PASSWORD: prisma
     ports:
       - "0.0.0.0:5432:5432"
+    volumes:
+      - ./initdb.d:/docker-entrypoint-initdb.d/
