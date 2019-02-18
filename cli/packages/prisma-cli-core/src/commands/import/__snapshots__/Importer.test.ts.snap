@@ -1,0 +1,6 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Importer Should throw an error when ids are missing 1`] = `
+"Uncaught exception, cleaning up: Error: Object {\\"_typeName\\":\\"Post\\",\\"title\\":\\"Quas dolores earum corporis aut voluptatibus dicta voluptatem.\\",\\"description\\":\\"Nulla non esse vitae hic sunt ut eveniet rem eaque. Et qui cumque tempora dolorem nisi et distinctio dolores est. Quia est commodi omnis voluptatem aspernatur voluptatem blanditiis perspiciatis. Qui qui earum consequatur illo molestias numquam dolores voluptas reprehenderit. Perferendis ipsum deserunt dolorem et. Et deleniti facere nesciunt reprehenderit accusamus.\\\\n \\\\rVero repudiandae blanditiis. Ab aut distinctio ut qui rem. Aut accusantium sed aliquid sit amet vero. Quasi impedit eum.\\\\n \\\\rItaque quas cupiditate animi amet non recusandae voluptatem non facere. Omnis quo eaque autem labore laborum qui incidunt. Et minima ut veritatis rerum aut architecto sint non accusamus.\\",\\"state\\":\\"Published\\"} needs an id property
+"
+`;

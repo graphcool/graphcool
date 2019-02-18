@@ -3,6 +3,7 @@ import * as fs from 'fs-extra'
 import { Client, Output, Config } from 'prisma-cli-engine'
 import * as globby from 'globby'
 import { Validator } from './Validator'
+import IdGenerator from './IdGenerator'
 import chalk from 'chalk'
 import * as AdmZip from 'adm-zip'
 import * as figures from 'figures'
@@ -97,6 +98,7 @@ export class Importer {
     stage: string,
     token?: string,
     workspaceSlug?: string,
+    generateMissingIds?: boolean,
   ) {
     try {
       if (!this.isDir) {
@@ -105,6 +107,9 @@ export class Importer {
       let before = Date.now()
       this.out.action.start('Validating data')
       const files = await this.getFiles()
+      if (generateMissingIds) {
+        files.nodes = IdGenerator.generateMissingIds(files.nodes)
+      }
       this.validateFiles(files)
       this.out.action.stop(chalk.cyan(`${Date.now() - before}ms`))
       before = Date.now()
