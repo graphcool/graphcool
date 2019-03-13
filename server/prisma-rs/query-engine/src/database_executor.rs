@@ -7,8 +7,12 @@ use rusqlite::Row;
 
 pub use sqlite::Sqlite;
 
+pub trait Parseable {
+    fn parse_at(&self, typ: TypeIdentifier, index: usize) -> PrismaValue;
+}
+
 pub trait DatabaseExecutor {
-    fn with_rows<F>(&self, query: Select, db_name: String, f: F) -> PrismaResult<Vec<Node>>
+    fn with_rows<F>(&self, query: Select, db_name: String, mut f: F) -> PrismaResult<Vec<Node>>
     where
-        F: FnMut(&Row) -> Node;
+        F: FnMut(Box<dyn Parseable>) -> Node;
 }

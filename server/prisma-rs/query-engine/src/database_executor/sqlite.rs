@@ -1,5 +1,6 @@
-use super::DatabaseExecutor;
+use super::{DatabaseExecutor, Parseable};
 use crate::SERVER_ROOT;
+use chrono::{DateTime, Utc};
 use prisma_common::PrismaResult;
 use prisma_models::prelude::*;
 use prisma_query::{
@@ -21,18 +22,48 @@ pub struct Sqlite {
 impl DatabaseExecutor for Sqlite {
     fn with_rows<F>(&self, query: Select, db_name: String, mut f: F) -> PrismaResult<Vec<Node>>
     where
-        F: FnMut(&Row) -> Node,
+        F: FnMut(Box<dyn Parseable>) -> Node,
     {
         self.with_connection(&db_name, |conn| {
             let (query_sql, params) = dbg!(visitor::Sqlite::build(query));
 
             let res = conn
                 .prepare(&query_sql)?
-                .query_map(&params, |row| f(row))?
+                .query_map(&params, |row| f(Box::new(row)))?
                 .map(|row_res| row_res.unwrap())
                 .collect();
 
             Ok(res)
+        })
+    }
+}
+
+// . . . . . . . . . . (╯°□°）╯︵ ┻━┻
+impl Parseable for Row<'_, '_> {
+    fn parse_at(&self, typ: TypeIdentifier, i: usize) -> PrismaValue {
+        let result = match typ {
+            TypeIdentifier::String => self.get_checked(i).map(|val| PrismaValue::String(val)),
+            TypeIdentifier::GraphQLID => self.get_checked(i).map(|val| PrismaValue::GraphqlId(val)),
+            TypeIdentifier::UUID => self.get_checked(i).map(|val| PrismaValue::Uuid(val)),
+            TypeIdentifier::Int => self.get_checked(i).map(|val| PrismaValue::Int(val)),
+            TypeIdentifier::Boolean => self.get_checked(i).map(|val| PrismaValue::Boolean(val)),
+            TypeIdentifier::Enum => self.get_checked(i).map(|val| PrismaValue::Enum(val)),
+            TypeIdentifier::Json => self.get_checked(i).map(|val| PrismaValue::Json(val)),
+            TypeIdentifier::DateTime => self.get_checked(i).map(|ts: i64| {
+                let nsecs = ((ts % 1000) * 1_000_000) as u32;
+                let secs = (ts / 1000) as i64;
+                let naive = chrono::NaiveDateTime::from_timestamp(secs, nsecs);
+                let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+
+                PrismaValue::DateTime(datetime)
+            }),
+            TypeIdentifier::Relation => panic!("We should not have a Relation here!"),
+            TypeIdentifier::Float => self.get_checked(i).map(|val: f64| PrismaValue::Float(val)),
+        };
+
+        result.unwrap_or_else(|e| match e {
+            rusqlite::Error::InvalidColumnType(_, rusqlite::types::Type::Null) => PrismaValue::Null,
+            _ => panic!(e),
         })
     }
 }
