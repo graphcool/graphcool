@@ -45,6 +45,7 @@ export interface IIndexInfo {
   name: string
   fields: IGQLField[]
   unique: boolean
+  comments: IComment[]
 }
 
 export enum IdStrategy {
@@ -287,8 +288,8 @@ export class GQLMultiRelationField extends GQLFieldBase {
 }
 
 function cloneComments(
-  copy: ISDL | IGQLField | IGQLType,
-  obj: ISDL | IGQLField | IGQLType,
+  copy: ISDL | IGQLField | IGQLType | IIndexInfo,
+  obj: ISDL | IGQLField | IGQLType | IIndexInfo,
 ) {
   if (obj.comments !== undefined) {
     copy.comments = []
@@ -318,7 +319,6 @@ function cloneCommentsAndDirectives(
   cloneComments(copy, obj)
 }
 
-// 21st of Dec: Start: 8:00 - end: 9:45
 export function cloneField(field: IGQLField): IGQLField {
   const copy = {
     ...field,
@@ -351,11 +351,14 @@ export function cloneIndices(copy: IGQLType, obj: IGQLType) {
     copy.indices = []
 
     for (const index of obj.indices) {
-      copy.indices.push({
+      const copyIndex = {
         name: index.name,
         unique: index.unique,
         fields: [...index.fields],
-      })
+        comments: [],
+      }
+      cloneComments(copyIndex, index)
+      copy.indices.push(copyIndex)
     }
   }
 }

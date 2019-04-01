@@ -104,7 +104,8 @@ describe(`Renderer directives test`, () => {
 
     const modelWithDirectives = dedent(`
       type User @indexes(value: [
-        {name: "NameIndex", fields: ["firstName", "lastName"]},
+        # Invalid Index
+        # {name: "NameIndex", fields: ["firstName", "lastName"]},
         {name: "PrimaryIndex", fields: ["id"], unique: true}
       ]) {
         createdAt: DateTime! @createdAt
@@ -140,8 +141,9 @@ describe(`Renderer directives test`, () => {
           name: 'NameIndex',
           fields: [firstNameField, lastNameField],
           unique: false,
+          comments: [{ isError: true, text: 'Invalid Index' }]
         },
-        { name: 'PrimaryIndex', fields: [idField], unique: true },
+        { name: 'PrimaryIndex', fields: [idField], unique: true, comments: [] },
       ],
       directives: [],
       comments: [],

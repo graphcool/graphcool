@@ -2,7 +2,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { DefaultParser, DefaultRenderer, DatabaseType } from 'prisma-datamodel'
 
-import * as mysql from 'mysql'
+import * as mysql from 'mysql2'
 import { connectionDetails } from '../connectionDetails'
 import { MysqlConnector } from '../../../../databases/relational/mysql/mysqlConnector'
 import MysqlClient from '../../../../databases/relational/mysql/mysqlDatabaseClient'

@@ -126,7 +126,7 @@ export class PostgresIntrospectionResult extends RelationalIntrospectionResult {
           let [dummy, seqName] = match
 
           // Trim quotes.
-          if(seqName.startsWith('"')) {
+          if (seqName.startsWith('"')) {
             seqName = seqName.substring(1, seqName.length - 1)
           }
 

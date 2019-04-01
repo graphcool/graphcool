@@ -66,7 +66,8 @@ type Customer @indexes(value: [
 }
 
 type Film @indexes(value: [
-  {name: \\"film_fulltext_idx\\", fields: [\\"fulltext\\"]},
+  # This index is invalid, since the following fields have errors: fulltext
+  # {name: \\"film_fulltext_idx\\", fields: [\\"fulltext\\"]},
   {name: \\"idx_title\\", fields: [\\"title\\"]}
 ]) @pgTable(name: \\"film\\") {
   id: Int! @pgColumn(name: \\"film_id\\") @unique
@@ -243,7 +244,8 @@ type Customer @db(name: \\"customer\\") @indexes(value: [
 }
 
 type Film @db(name: \\"film\\") @indexes(value: [
-  {name: \\"film_fulltext_idx\\", fields: [\\"fulltext\\"]},
+  # This index is invalid, since the following fields have errors: fulltext
+  # {name: \\"film_fulltext_idx\\", fields: [\\"fulltext\\"]},
   {name: \\"idx_title\\", fields: [\\"title\\"]}
 ]) {
   film_id: Int! @id(strategy: SEQUENCE) @sequence(name: \\"film_film_id_seq\\", initialValue: 1, allocationSize: 1)

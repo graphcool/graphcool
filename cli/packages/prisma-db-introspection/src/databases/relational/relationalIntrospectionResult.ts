@@ -184,6 +184,25 @@ export abstract class RelationalIntrospectionResult extends IntrospectionResult 
     }
     return types
   }
+  protected markInvalidIndexes(types: IGQLType[]) {
+    for (const type of types) {
+      for (const indexInfo of type.indices) {
+        const errorFields = indexInfo.fields.filter(field =>
+          field.comments.some(comment => comment.isError),
+        )
+
+        if (errorFields.length > 0) {
+          indexInfo.comments.push({
+            text: `This index is invalid, since the following fields have errors: ${errorFields
+              .map(field => field.name)
+              .join('\n')}`,
+            isError: true,
+          })
+        }
+      }
+    }
+    return types
+  }
 
   protected markMultiIdFieldsForJoinTabesAsErrors(
     types: IGQLType[],
@@ -504,6 +523,7 @@ export abstract class RelationalIntrospectionResult extends IntrospectionResult 
     types = this.hideJoinTypes(types)
     types = this.markNonIdFieldsWithSequencesAsErrored(types)
     types = this.markMultiIdFieldsForJoinTabesAsErrors(types)
+    types = this.markInvalidIndexes(types)
 
     return {
       comments: [],
@@ -517,11 +537,14 @@ export abstract class RelationalIntrospectionResult extends IntrospectionResult 
         index.fields.filter(indexField => field.name === indexField).length > 0,
     )
 
-    return {
+    const indexInfo: IIndexInfo = {
       fields: fieldCandidates,
       name: index.name,
       unique: index.unique,
+      comments: [],
     }
+
+    return indexInfo
   }
 
   // We need info about indices for resolving the exact type, as String is mapped to ID.

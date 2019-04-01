@@ -292,6 +292,7 @@ export default abstract class DefaultParser {
       name: nameArgument,
       // Unique default is true.
       unique: uniqueArgument === null ? true : uniqueArgument,
+      comments: [],
     }
   }
 

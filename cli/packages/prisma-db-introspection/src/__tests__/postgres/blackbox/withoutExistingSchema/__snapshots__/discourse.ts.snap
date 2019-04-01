@@ -165,7 +165,10 @@ type CategoryGroup @pgTable(name: \\"category_groups\\") {
   updated_at: DateTime!
 }
 
-type CategorySearchDatum @pgTable(name: \\"category_search_data\\") {
+type CategorySearchDatum @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_category\\", fields: [\\"search_data\\"]}
+]) @pgTable(name: \\"category_search_data\\") {
   id: Int! @pgColumn(name: \\"category_id\\") @unique
   locale: String
   raw_data: String
@@ -880,7 +883,10 @@ type PostRevision @indexes(value: [
   user_id: Int
 }
 
-type PostSearchDatum @pgTable(name: \\"post_search_data\\") {
+type PostSearchDatum @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_post\\", fields: [\\"search_data\\"]}
+]) @pgTable(name: \\"post_search_data\\") {
   id: Int! @pgColumn(name: \\"post_id\\") @unique
   locale: String
   raw_data: String
@@ -1165,7 +1171,10 @@ type TagGroupPermission @indexes(value: [
   updated_at: DateTime!
 }
 
-type TagSearchDatum @pgTable(name: \\"tag_search_data\\") {
+type TagSearchDatum @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_tag\\", fields: [\\"search_data\\"]}
+]) @pgTable(name: \\"tag_search_data\\") {
   id: Int! @pgColumn(name: \\"tag_id\\") @unique
   locale: String
   raw_data: String
@@ -1433,7 +1442,10 @@ type TopicLinkClick @indexes(value: [
   user_id: Int
 }
 
-type TopicSearchDatum @pgTable(name: \\"topic_search_data\\") {
+type TopicSearchDatum @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_topic\\", fields: [\\"search_data\\"]}
+]) @pgTable(name: \\"topic_search_data\\") {
   id: Int! @pgColumn(name: \\"topic_id\\") @unique
   locale: String!
   raw_data: String
@@ -1495,7 +1507,8 @@ type TopicView @indexes(value: [
   {name: \\"index_topic_views_on_topic_id_and_viewed_at\\", fields: [\\"topic_id\\", \\"viewed_at\\"]},
   {name: \\"index_topic_views_on_user_id_and_viewed_at\\", fields: [\\"viewed_at\\", \\"user_id\\"]},
   {name: \\"index_topic_views_on_viewed_at_and_topic_id\\", fields: [\\"topic_id\\", \\"viewed_at\\"]},
-  {name: \\"uniq_ip_or_user_id_topic_views\\", fields: [\\"topic_id\\", \\"user_id\\", \\"ip_address\\"], unique: true}
+  # This index is invalid, since the following fields have errors: ip_address
+  # {name: \\"uniq_ip_or_user_id_topic_views\\", fields: [\\"topic_id\\", \\"user_id\\", \\"ip_address\\"], unique: true}
 ]) @pgTable(name: \\"topic_views\\") {
   # Type inet is not supported
   # ip_address: inet
@@ -1855,7 +1868,8 @@ type UserProfile @indexes(value: [
 type UserProfileView @indexes(value: [
   {name: \\"index_user_profile_views_on_user_id\\", fields: [\\"user_id\\"]},
   {name: \\"index_user_profile_views_on_user_profile_id\\", fields: [\\"user_profile_id\\"]},
-  {name: \\"unique_profile_view_user_or_ip\\", fields: [\\"user_profile_id\\", \\"viewed_at\\", \\"ip_address\\", \\"user_id\\"], unique: true}
+  # This index is invalid, since the following fields have errors: ip_address
+  # {name: \\"unique_profile_view_user_or_ip\\", fields: [\\"user_profile_id\\", \\"viewed_at\\", \\"ip_address\\", \\"user_id\\"], unique: true}
 ]) @pgTable(name: \\"user_profile_views\\") {
   id: Int! @unique
   # Type inet is not supported
@@ -1865,7 +1879,10 @@ type UserProfileView @indexes(value: [
   viewed_at: DateTime!
 }
 
-type UserSearchDatum @pgTable(name: \\"user_search_data\\") {
+type UserSearchDatum @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_user\\", fields: [\\"search_data\\"]}
+]) @pgTable(name: \\"user_search_data\\") {
   id: Int! @pgColumn(name: \\"user_id\\") @unique
   locale: String
   raw_data: String
@@ -2164,7 +2181,10 @@ type CategoryGroup @db(name: \\"category_groups\\") {
   updated_at: DateTime!
 }
 
-type CategorySearchDatum @db(name: \\"category_search_data\\") {
+type CategorySearchDatum @db(name: \\"category_search_data\\") @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_category\\", fields: [\\"search_data\\"]}
+]) {
   category_id: Int! @id(strategy: NONE)
   locale: String
   raw_data: String
@@ -2879,7 +2899,10 @@ type PostRevision @db(name: \\"post_revisions\\") @indexes(value: [
   user_id: Int
 }
 
-type PostSearchDatum @db(name: \\"post_search_data\\") {
+type PostSearchDatum @db(name: \\"post_search_data\\") @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_post\\", fields: [\\"search_data\\"]}
+]) {
   post_id: Int! @id(strategy: NONE)
   locale: String
   raw_data: String
@@ -3164,7 +3187,10 @@ type TagGroupPermission @db(name: \\"tag_group_permissions\\") @indexes(value: [
   updated_at: DateTime!
 }
 
-type TagSearchDatum @db(name: \\"tag_search_data\\") {
+type TagSearchDatum @db(name: \\"tag_search_data\\") @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_tag\\", fields: [\\"search_data\\"]}
+]) {
   tag_id: Int! @id(strategy: SEQUENCE) @sequence(name: \\"tag_search_data_tag_id_seq\\", initialValue: 1, allocationSize: 1)
   locale: String
   raw_data: String
@@ -3432,7 +3458,10 @@ type TopicLinkClick @db(name: \\"topic_link_clicks\\") @indexes(value: [
   user_id: Int
 }
 
-type TopicSearchDatum @db(name: \\"topic_search_data\\") {
+type TopicSearchDatum @db(name: \\"topic_search_data\\") @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_topic\\", fields: [\\"search_data\\"]}
+]) {
   topic_id: Int! @id(strategy: NONE)
   locale: String!
   raw_data: String
@@ -3494,7 +3523,8 @@ type TopicView @db(name: \\"topic_views\\") @indexes(value: [
   {name: \\"index_topic_views_on_topic_id_and_viewed_at\\", fields: [\\"topic_id\\", \\"viewed_at\\"]},
   {name: \\"index_topic_views_on_user_id_and_viewed_at\\", fields: [\\"viewed_at\\", \\"user_id\\"]},
   {name: \\"index_topic_views_on_viewed_at_and_topic_id\\", fields: [\\"topic_id\\", \\"viewed_at\\"]},
-  {name: \\"uniq_ip_or_user_id_topic_views\\", fields: [\\"topic_id\\", \\"user_id\\", \\"ip_address\\"], unique: true}
+  # This index is invalid, since the following fields have errors: ip_address
+  # {name: \\"uniq_ip_or_user_id_topic_views\\", fields: [\\"topic_id\\", \\"user_id\\", \\"ip_address\\"], unique: true}
 ]) {
   # Type inet is not supported
   # ip_address: inet
@@ -3854,7 +3884,8 @@ type UserProfile @db(name: \\"user_profiles\\") @indexes(value: [
 type UserProfileView @db(name: \\"user_profile_views\\") @indexes(value: [
   {name: \\"index_user_profile_views_on_user_id\\", fields: [\\"user_id\\"]},
   {name: \\"index_user_profile_views_on_user_profile_id\\", fields: [\\"user_profile_id\\"]},
-  {name: \\"unique_profile_view_user_or_ip\\", fields: [\\"user_profile_id\\", \\"viewed_at\\", \\"ip_address\\", \\"user_id\\"], unique: true}
+  # This index is invalid, since the following fields have errors: ip_address
+  # {name: \\"unique_profile_view_user_or_ip\\", fields: [\\"user_profile_id\\", \\"viewed_at\\", \\"ip_address\\", \\"user_id\\"], unique: true}
 ]) {
   id: Int! @id(strategy: SEQUENCE) @sequence(name: \\"user_profile_views_id_seq\\", initialValue: 1, allocationSize: 1)
   # Type inet is not supported
@@ -3864,7 +3895,10 @@ type UserProfileView @db(name: \\"user_profile_views\\") @indexes(value: [
   viewed_at: DateTime!
 }
 
-type UserSearchDatum @db(name: \\"user_search_data\\") {
+type UserSearchDatum @db(name: \\"user_search_data\\") @indexes(value: [
+  # This index is invalid, since the following fields have errors: search_data
+  # {name: \\"idx_search_user\\", fields: [\\"search_data\\"]}
+]) {
   user_id: Int! @id(strategy: NONE)
   locale: String
   raw_data: String
