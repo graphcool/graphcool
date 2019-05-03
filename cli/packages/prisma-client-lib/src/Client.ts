@@ -17,7 +17,7 @@ import gql from 'graphql-tag'
 import { getTypesAndWhere } from './utils'
 const log = require('debug')('binding')
 import { sign } from 'jsonwebtoken'
-import { BatchedGraphQLClient } from 'http-link-dataloader'
+import { BatchedGraphQLClient } from 'batched-graphql-request'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
 import { observableToAsyncIterable } from './utils/observableToAsyncIterable'
 import * as WS from 'ws'
