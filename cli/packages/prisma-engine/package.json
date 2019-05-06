@@ -1,0 +1,31 @@
+{
+  "name": "@prisma/engine",
+  "version": "1.24.0-test.13",
+  "main": "dist/index.js",
+  "repository": "git@github.com:prisma/graal-feedback.git",
+  "author": "timsuchanek <tim.suchanek@gmail.com>",
+  "license": "Apache 2.0",
+  "dependencies": {
+    "@expo/spawn-async": "^1.4.0",
+    "assert": "^1.4.1",
+    "async-retry": "^1.2.3",
+    "chalk": "^2.4.1",
+    "death": "^1.1.0",
+    "get-port": "^5.0.0",
+    "getos": "^3.1.1",
+    "graphql-request": "^1.8.2",
+    "js-yaml": "^3.13.1",
+    "node-fetch": "^2.3.0",
+    "progress": "^2.0.3",
+    "which-promise": "^1.0.0",
+    "zlib": "^1.0.5"
+  },
+  "scripts": {
+    "build": "tsc -d",
+    "prepare": "yarn build",
+    "postinstall": "node dist/download/download.js"
+  },
+  "files": [
+    "dist"
+  ]
+}

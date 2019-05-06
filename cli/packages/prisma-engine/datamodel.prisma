@@ -1,0 +1,76 @@
+type Cli_command @pgTable(name: "cli_command") {
+  command: String!
+  created_at: DateTime!
+  day: DateTime
+  fid: String!
+  globalbin: Boolean!
+  version: String!
+}
+
+type Cli_command_error @pgTable(name: "cli_command_error") {
+  command: String!
+  created_at: DateTime!
+  day: DateTime
+  fid: String!
+  globalbin: Boolean!
+  version: String!
+}
+
+type Fid_user_id @pgTable(name: "fid_user_id") {
+  fid: String @unique
+  user_id: String @unique
+}
+
+type Prisma_active_services @pgTable(name: "prisma_active_services") {
+  count: Int
+  date: DateTime @unique
+  is_cloud: Boolean @unique
+  region: String @unique
+}
+
+type Prisma_cluster_count @pgTable(name: "prisma_cluster_count") {
+  count: Int
+  date: DateTime @unique
+  region: String @unique
+}
+
+type Prisma_cluster_requests @pgTable(name: "prisma_cluster_requests") {
+  count: Int
+  date: DateTime @unique
+  is_cloud: Boolean @unique
+  region: String @unique
+}
+
+type Prisma_paying_customers_count
+  @pgTable(name: "prisma_paying_customers_count") {
+  count: Int
+  id: DateTime! @pgColumn(name: "date") @unique
+}
+
+type Prisma_server_ping @pgTable(name: "prisma_server_ping") {
+  created_at: DateTime
+  date: DateTime @unique
+  id: String @unique
+  ip: String
+  services: Int
+  version: String
+}
+
+type Prisma_service_count @pgTable(name: "prisma_service_count") {
+  count: Int
+  date: DateTime @unique
+  is_cloud: Boolean @unique
+  region: String @unique
+}
+
+type Prisma_signup @pgTable(name: "prisma_signup") {
+  created_at: DateTime!
+  id: ID! @unique
+  source: String
+}
+
+type Prisma_signup_without_fid @pgTable(name: "prisma_signup_without_fid") {
+  created_at: DateTime!
+  id: Int! @unique
+  user_id: String
+}

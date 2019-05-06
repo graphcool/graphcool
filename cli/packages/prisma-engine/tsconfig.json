@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    "strictNullChecks": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "lib": ["esnext", "dom"],
+    "target": "es2017",
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "rootDir": "src"
+  },
+  "exclude": ["node_modules", "dist", "example"]
+}
