@@ -61,11 +61,11 @@ pub struct Column {
 
 impl Column {
     pub fn differs_in_something_except_default(&self, other: &Column) -> bool {
-        self.name != other.name ||
-            self.tpe != other.tpe ||
-            self.is_required != other.is_required ||
-            self.foreign_key != other.foreign_key ||
-            self.sequence != other.sequence
+        self.name != other.name
+            || self.tpe != other.tpe
+            || self.is_required != other.is_required
+            || self.foreign_key != other.foreign_key
+            || self.sequence != other.sequence
     }
 }
 
@@ -77,7 +77,7 @@ impl Column {
             is_required,
             foreign_key: None,
             sequence: None,
-            default: None
+            default: None,
         }
     }
 
@@ -120,7 +120,7 @@ impl ForeignKey {
         ForeignKey {
             name: None,
             table,
-            column
+            column,
         }
     }
 
@@ -128,7 +128,7 @@ impl ForeignKey {
         ForeignKey {
             name: Some(name),
             table,
-            column
+            column,
         }
     }
 }
@@ -150,5 +150,5 @@ pub struct Index {
 pub enum IndexType {
     // can later add fulltext or custom ones
     Unique,
-    Normal
+    Normal,
 }

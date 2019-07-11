@@ -1,10 +1,10 @@
 use super::database_inspector_impl::IntrospectedColumn;
 use prisma_query::ast::ParameterizedValue;
-use prisma_query::Connectional;
+use prisma_query::connector::Database;
 use std::sync::Arc;
 
 pub struct InformationSchema {
-    pub connectional: Arc<Connectional>,
+    pub database: Arc<Database>,
     pub data_type_column: String,
 }
 
@@ -24,9 +24,12 @@ impl InformationSchema {
             schema
         );
 
-        let result_set = self.connectional.query_on_raw_connection(&schema, &sql, &[]).unwrap();
-        let names = result_set.into_iter().map(|row| row.at_as_string(0).unwrap()).collect();
-        names
+        let result_set = self.database.query_on_raw_connection(&schema, &sql, &[]).unwrap();
+
+        result_set
+            .into_iter()
+            .map(|row| row[0].into_string().unwrap())
+            .collect()
     }
 
     pub fn get_columns(&self, schema: &String, table: &String) -> Vec<IntrospectedColumn> {
@@ -47,21 +50,20 @@ impl InformationSchema {
             self.data_type_column, schema, table
         );
 
-        let result_set = self.connectional.query_on_raw_connection(&schema, &sql, &[]).unwrap();
+        let result_set = self.database.query_on_raw_connection(&schema, &sql, &[]).unwrap();
         let columns = result_set
             .into_iter()
             .map(|row| {
-                let default_value = match row.get("column_default") {
-                    Ok(ParameterizedValue::Text(v)) => Some(v.to_string()),
-                    Ok(ParameterizedValue::Null) => None,
-                    Ok(p) => panic!(format!("expectd a string value but got {:?}", p)),
-                    Err(err) => panic!(format!("{}", err)),
+                let default_value = match row["column_default"] {
+                    ParameterizedValue::Text(v) => Some(v.to_string()),
+                    ParameterizedValue::Null => None,
+                    p => panic!(format!("expectd a string value but got {:?}", p)),
                 };
                 IntrospectedColumn {
-                    name: row.get_as_string("column_name").unwrap(),
+                    name: row["column_name"].into_string().unwrap(),
                     table: table.to_string(),
-                    tpe: row.get_as_string("data_type").unwrap(),
-                    is_required: !row.get_as_bool("is_nullable").unwrap(),
+                    tpe: row["data_type"].into_string().unwrap(),
+                    is_required: !row["is_nullable"].as_bool().unwrap(),
                     default: default_value,
                     pk: 1 as u32, // TODO: implement foreign key llokup
                 }
@@ -94,10 +96,10 @@ impl InformationSchema {
             schema, table
         );
 
-        let result_set = self.connectional.query_on_raw_connection(&schema, &sql, &[]).unwrap();
+        let result_set = self.database.query_on_raw_connection(&schema, &sql, &[]).unwrap();
         let mut pks: Vec<String> = result_set
             .into_iter()
-            .map(|row| row.get_as_string("key_column").unwrap())
+            .map(|row| row["key_column"].into_string().unwrap())
             .collect();
         pks.dedup(); // this query yields duplicates on MySQL
         pks

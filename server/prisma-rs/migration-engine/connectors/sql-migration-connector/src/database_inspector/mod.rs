@@ -1,21 +1,20 @@
 #![allow(dead_code)]
 
 mod database_inspector_impl;
+mod database_schema;
 mod empty_impl;
 mod information_schema;
+mod mysql_inspector;
 mod postgres_inspector;
 mod sqlite_inspector;
-mod database_schema;
-mod mysql_inspector;
 
 pub use database_inspector_impl::*;
-pub use empty_impl::*;
 pub use database_schema::*;
+pub use empty_impl::*;
+use mysql_inspector::MysqlInspector;
 use postgres::Config as PostgresConfig;
 use postgres_inspector::Postgres;
-use mysql_inspector::MysqlInspector;
-use prisma_query::connector::{PostgreSql as PostgresDriver, Sqlite as SqliteDriver, Mysql as MysqlDriver };
-use prisma_query::Connectional;
+use prisma_query::connector::{Database, Mysql as MysqlDriver, PostgreSql as PostgresDriver, Sqlite as SqliteDriver};
 use sqlite_inspector::Sqlite;
 use std::borrow::Cow;
 use std::sync::Arc;
@@ -35,11 +34,11 @@ impl DatabaseInspector {
         let connection_limit = 5;
         let test_mode = false;
         let conn = Arc::new(SqliteDriver::new(file_path, connection_limit, test_mode).unwrap());
-        Self::sqlite_with_connectional(conn)
+        Self::sqlite_with_database(conn)
     }
 
-    pub fn sqlite_with_connectional(connectional: Arc<Connectional>) -> Sqlite {
-        Sqlite::new(connectional)
+    pub fn sqlite_with_database(database: Arc<Database>) -> Sqlite {
+        Sqlite::new(database)
     }
 
     pub fn postgres(url: String) -> Postgres {
@@ -80,16 +79,16 @@ impl DatabaseInspector {
         Postgres::new(schema_connection)
     }
 
-    pub fn postgres_with_connectional(connectional: Arc<Connectional>) -> Postgres {
-        Postgres::new(connectional)
+    pub fn postgres_with_database(database: Arc<Database>) -> Postgres {
+        Postgres::new(database)
     }
 
     pub fn mysql(url: String) -> MysqlInspector {
-        let connectional = MysqlDriver::new_from_url(&url).unwrap();
-        Self::mysql_with_connectional(Arc::new(connectional))
+        let database = MysqlDriver::new_from_url(&url).unwrap();
+        Self::mysql_with_database(Arc::new(database))
     }
 
-    pub fn mysql_with_connectional(connectional: Arc<Connectional>) -> MysqlInspector {
-        MysqlInspector::new(connectional)
+    pub fn mysql_with_database(database: Arc<Database>) -> MysqlInspector {
+        MysqlInspector::new(database)
     }
 }

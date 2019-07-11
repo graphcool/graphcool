@@ -1,14 +1,14 @@
 use crate::{
     error::SqlError,
     write_query::{NestedActions, WriteQueryBuilder},
-    Transaction,
+    TransactionExt,
 };
 use prisma_models::{GraphqlId, ModelRef, PrismaArgs, PrismaListValue, RelationFieldRef};
 use std::sync::Arc;
 
 /// Creates a new root record and any associated list records to the database.
 pub fn execute<S>(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     model: ModelRef,
     non_list_args: &PrismaArgs,
     list_args: &[(S, PrismaListValue)],
@@ -47,7 +47,7 @@ where
 
     let id = match returned_id {
         Some(id) => id,
-        None => last_id.unwrap(),
+        None => GraphqlId::from(last_id.unwrap()),
     };
 
     for (field_name, list_value) in list_args {
@@ -65,7 +65,7 @@ where
 /// Creates a new nested item related to a parent, including any associated
 /// list values, and is connected with the `parent_id` to the parent record.
 pub fn execute_nested<S>(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     parent_id: &GraphqlId,
     actions: &NestedActions,
     relation_field: RelationFieldRef,
@@ -81,7 +81,7 @@ where
     };
 
     if let Some(query) = actions.parent_removal(parent_id) {
-        conn.write(query)?;
+        conn.execute(query)?;
     }
 
     let related_field = relation_field.related_field();
@@ -95,7 +95,7 @@ where
         let id = execute(conn, relation_field.related_model(), non_list_args, list_args)?;
         let relation_query = WriteQueryBuilder::create_relation(relation_field, parent_id, &id);
 
-        conn.write(relation_query)?;
+        conn.execute(relation_query)?;
 
         Ok(id)
     }

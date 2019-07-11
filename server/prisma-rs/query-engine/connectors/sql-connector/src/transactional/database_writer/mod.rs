@@ -9,7 +9,8 @@ mod update_many;
 use crate::{
     database::{SqlCapabilities, SqlDatabase},
     error::SqlError,
-    RawQuery, Transaction, Transactional,
+    write_query::WriteQueryBuilder,
+    RawQuery, TransactionExt, TransactionalExt,
 };
 use connector::{self, write_query::*, DatabaseWriter};
 use serde_json::Value;
@@ -17,11 +18,11 @@ use std::sync::Arc;
 
 impl<T> DatabaseWriter for SqlDatabase<T>
 where
-    T: Transactional + SqlCapabilities,
+    T: TransactionalExt + SqlCapabilities,
 {
     fn execute(&self, db_name: String, write_query: RootWriteQuery) -> connector::Result<WriteQueryResult> {
-        let result = self.executor.with_transaction(&db_name, |conn: &mut Transaction| {
-            fn create(conn: &mut Transaction, cn: &CreateRecord) -> crate::Result<WriteQueryResult> {
+        let result = self.executor.with_tx_ext(&db_name, |conn: &mut TransactionExt| {
+            fn create(conn: &mut TransactionExt, cn: &CreateRecord) -> crate::Result<WriteQueryResult> {
                 let parent_id = create::execute(conn, Arc::clone(&cn.model), &cn.non_list_args, &cn.list_args)?;
                 nested::execute(conn, &cn.nested_writes, &parent_id)?;
 
@@ -31,7 +32,7 @@ where
                 })
             }
 
-            fn update(conn: &mut Transaction, un: &UpdateRecord) -> crate::Result<WriteQueryResult> {
+            fn update(conn: &mut TransactionExt, un: &UpdateRecord) -> crate::Result<WriteQueryResult> {
                 let parent_id = update::execute(conn, &un.where_, &un.non_list_args, &un.list_args)?;
                 nested::execute(conn, &un.nested_writes, &parent_id)?;
 
@@ -80,7 +81,8 @@ where
                     })
                 }
                 RootWriteQuery::ResetData(ref rd) => {
-                    conn.truncate(Arc::clone(&rd.internal_data_model))?;
+                    let tables = WriteQueryBuilder::truncate_tables(Arc::clone(&rd.internal_data_model));
+                    conn.empty_tables(tables)?;
 
                     Ok(WriteQueryResult {
                         identifier: Identifier::None,
@@ -94,9 +96,9 @@ where
     }
 
     fn execute_raw(&self, db_name: String, query: String) -> connector::Result<Value> {
-        let result = self
-            .executor
-            .with_transaction(&db_name, |conn: &mut Transaction| conn.raw(RawQuery::from(query)))?;
+        let result = self.executor.with_tx_ext(&db_name, |conn: &mut TransactionExt| {
+            conn.raw_json(RawQuery::from(query))
+        })?;
 
         Ok(result)
     }

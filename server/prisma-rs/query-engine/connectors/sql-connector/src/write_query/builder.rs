@@ -198,25 +198,25 @@ impl WriteQueryBuilder {
         })
     }
 
-    pub fn truncate_tables(internal_data_model: InternalDataModelRef) -> Vec<Delete<'static>> {
+    pub fn truncate_tables(internal_data_model: InternalDataModelRef) -> Vec<Table<'static>> {
         let models = internal_data_model.models();
-        let mut deletes = Vec::new();
+        let mut tables = Vec::new();
 
-        deletes = internal_data_model
+        tables = internal_data_model
             .relations()
             .iter()
             .map(|r| r.relation_table())
-            .fold(deletes, |mut acc, table| {
-                acc.push(Delete::from_table(table));
+            .fold(tables, |mut acc, table| {
+                acc.push(table);
                 acc
             });
 
-        deletes = models.iter().map(|m| m.table()).fold(deletes, |mut acc, table| {
-            acc.push(Delete::from_table(table));
+        tables = models.iter().map(|m| m.table()).fold(tables, |mut acc, table| {
+            acc.push(table);
             acc
         });
 
-        deletes = models
+        tables = models
             .iter()
             .flat_map(|m| {
                 let tables: Vec<Table> = m
@@ -228,12 +228,12 @@ impl WriteQueryBuilder {
 
                 tables
             })
-            .fold(deletes, |mut acc, table| {
-                acc.push(Delete::from_table(table));
+            .fold(tables, |mut acc, table| {
+                acc.push(table);
                 acc
             });
 
-        deletes
+        tables
     }
 
     fn delete_in_chunks<F>(table: Table<'static>, ids: &[&GraphqlId], conditions: F) -> Vec<Delete<'static>>

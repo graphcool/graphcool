@@ -1,7 +1,7 @@
 use crate::{
     error::SqlError,
     write_query::{DeleteActions, NestedActions, WriteQueryBuilder},
-    Transaction,
+    TransactionExt,
 };
 use connector::{error::RecordFinderInfo, filter::RecordFinder};
 use prisma_models::{GraphqlId, RelationFieldRef, SingleRecord};
@@ -11,7 +11,7 @@ use std::sync::Arc;
 /// non-existing record will cause an error.
 ///
 /// Will return the deleted record if the delete was successful.
-pub fn execute(conn: &mut Transaction, record_finder: &RecordFinder) -> crate::Result<SingleRecord> {
+pub fn execute(conn: &mut TransactionExt, record_finder: &RecordFinder) -> crate::Result<SingleRecord> {
     let model = record_finder.field.model();
     let record = conn.find_record(record_finder)?;
     let id = record.get_id_value(Arc::clone(&model)).unwrap();
@@ -38,7 +38,7 @@ pub fn execute(conn: &mut Transaction, record_finder: &RecordFinder) -> crate::R
 /// - If the deleted record is not connected to the parent
 /// - The record does not exist
 pub fn execute_nested(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     parent_id: &GraphqlId,
     actions: &NestedActions,
     record_finder: &Option<RecordFinder>,

@@ -1,6 +1,6 @@
+use datamodel::Value;
 use migration_connector::DatabaseMigrationMarker;
 use serde::{Deserialize, Serialize};
-use datamodel::Value;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SqlMigration {
@@ -110,7 +110,7 @@ pub struct CreateIndex {
     pub table: String,
     pub name: String,
     pub tpe: IndexType,
-    pub columns: Vec<String>
+    pub columns: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -123,7 +123,5 @@ pub struct DropIndex {
 pub enum IndexType {
     // can later add fulltext or custom ones
     Unique,
-    Normal
+    Normal,
 }
-
-

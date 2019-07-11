@@ -8,7 +8,7 @@ use std::{convert::TryFrom, path::PathBuf, sync::Arc};
 use url::Url;
 
 #[cfg(feature = "sql")]
-use sql_connector::{Mysql, PostgreSql, SqlCapabilities, SqlDatabase, Sqlite, Transactional};
+use sql_connector::{SqlCapabilities, SqlDatabase, TransactionalExt};
 
 pub fn load(source: &Box<dyn Source>) -> PrismaResult<Executor> {
     match source.connector_type() {

@@ -6,9 +6,6 @@
 //! - [DatabaseWriter](../connector/trait.DatabaseWriter.html) to write
 //!   data.
 
-#[macro_use]
-extern crate log;
-
 mod cursor_condition;
 mod database;
 mod error;
@@ -23,7 +20,6 @@ mod write_query;
 use filter_conversion::*;
 use raw_query::*;
 use row::*;
-use write_query::*;
 
 pub use database::*;
 pub use error::SqlError;

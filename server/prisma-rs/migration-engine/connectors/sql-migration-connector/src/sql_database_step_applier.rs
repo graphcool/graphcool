@@ -1,13 +1,13 @@
 use crate::*;
-use migration_connector::*;
-use prisma_query::Connectional;
-use std::sync::Arc;
 use datamodel::Value;
+use migration_connector::*;
+use prisma_query::connector::Database;
+use std::sync::Arc;
 
 pub struct SqlDatabaseStepApplier {
     pub sql_family: SqlFamily,
     pub schema_name: String,
-    pub conn: Arc<Connectional>,
+    pub conn: Arc<Database>,
 }
 
 #[allow(unused, dead_code)]
@@ -117,11 +117,18 @@ fn render_raw_sql(step: &SqlMigrationStep, sql_family: SqlFamily, schema_name: &
                     .collect();
                 lines.push(format!("PRIMARY KEY ({})", column_names.join(",")))
             }
-            format!("CREATE TABLE {}.{}({});", quote(&schema_name, sql_family), quote(name, sql_family), lines.join(","))
+            format!(
+                "CREATE TABLE {}.{}({});",
+                quote(&schema_name, sql_family),
+                quote(name, sql_family),
+                lines.join(",")
+            )
         }
-        SqlMigrationStep::DropTable(DropTable { name }) => {
-            format!("DROP TABLE {}.{};", quote(&schema_name, sql_family), quote(name, sql_family))
-        }
+        SqlMigrationStep::DropTable(DropTable { name }) => format!(
+            "DROP TABLE {}.{};",
+            quote(&schema_name, sql_family),
+            quote(name, sql_family)
+        ),
         SqlMigrationStep::DropTables(DropTables { names }) => {
             let fully_qualified_names: Vec<String> = names
                 .iter()
@@ -134,7 +141,12 @@ fn render_raw_sql(step: &SqlMigrationStep, sql_family: SqlFamily, schema_name: &
                 SqlFamily::Sqlite => format!("{}", quote(new_name, sql_family)),
                 _ => format!("{}.{}", quote(&schema_name, sql_family), quote(new_name, sql_family)),
             };
-            format!("ALTER TABLE {}.{} RENAME TO {};", quote(&schema_name, sql_family), quote(name, sql_family), new_name)
+            format!(
+                "ALTER TABLE {}.{} RENAME TO {};",
+                quote(&schema_name, sql_family),
+                quote(name, sql_family),
+                new_name
+            )
         }
         SqlMigrationStep::AlterTable(AlterTable { table, changes }) => {
             let mut lines = Vec::new();
@@ -146,20 +158,30 @@ fn render_raw_sql(step: &SqlMigrationStep, sql_family: SqlFamily, schema_name: &
                     }
                     TableChange::DropColumn(DropColumn { name }) => {
                         // TODO: this does not work on MySQL for columns with foreign keys. Here the FK must be dropped first by name.
-                        let name = quote(&name, sql_family); 
+                        let name = quote(&name, sql_family);
                         lines.push(format!("DROP COLUMN {}", name));
-                    },
+                    }
                     TableChange::AlterColumn(AlterColumn { name, column }) => {
-                        let name = quote(&name, sql_family); 
+                        let name = quote(&name, sql_family);
                         lines.push(format!("DROP COLUMN {}", name));
                         let col_sql = render_column(sql_family, schema_name.to_string(), &column, true);
                         lines.push(format!("ADD COLUMN {}", col_sql));
                     }
                 }
             }
-            format!("ALTER TABLE {}.{} {};", quote(&schema_name, sql_family), quote(table, sql_family), lines.join(","))
+            format!(
+                "ALTER TABLE {}.{} {};",
+                quote(&schema_name, sql_family),
+                quote(table, sql_family),
+                lines.join(",")
+            )
         }
-        SqlMigrationStep::CreateIndex(CreateIndex{table, name, tpe, columns}) => {
+        SqlMigrationStep::CreateIndex(CreateIndex {
+            table,
+            name,
+            tpe,
+            columns,
+        }) => {
             let index_type = match tpe {
                 IndexType::Unique => "UNIQUE",
                 IndexType::Normal => "",
@@ -181,23 +203,19 @@ fn render_raw_sql(step: &SqlMigrationStep, sql_family: SqlFamily, schema_name: &
                 columns.join(",")
             )
         }
-        SqlMigrationStep::DropIndex(DropIndex{table, name}) => {
-            match sql_family {
-                SqlFamily::Mysql =>
-                    format!(
-                        "DROP INDEX {} ON {}.{}",
-                        quote(&name, sql_family),
-                        quote(&schema_name, sql_family),
-                        quote(&table, sql_family)
-                    ),
-                SqlFamily::Postgres | SqlFamily::Sqlite =>
-                    format!(
-                        "DROP INDEX {}.{}",
-                        quote(&schema_name, sql_family),
-                        quote(&name, sql_family)
-                    ),
-            }
-        }
+        SqlMigrationStep::DropIndex(DropIndex { table, name }) => match sql_family {
+            SqlFamily::Mysql => format!(
+                "DROP INDEX {} ON {}.{}",
+                quote(&name, sql_family),
+                quote(&schema_name, sql_family),
+                quote(&table, sql_family)
+            ),
+            SqlFamily::Postgres | SqlFamily::Sqlite => format!(
+                "DROP INDEX {}.{}",
+                quote(&schema_name, sql_family),
+                quote(&name, sql_family)
+            ),
+        },
         SqlMigrationStep::RawSql { raw } => raw.to_string(),
     }
 }
@@ -218,47 +236,38 @@ fn render_column(
 ) -> String {
     let column_name = quote(&column_description.name, sql_family);
     let tpe_str = render_column_type(sql_family, column_description.tpe);
-    let nullability_str = if column_description.required {
-        "NOT NULL"
-    } else {
-        ""
-    };
+    let nullability_str = if column_description.required { "NOT NULL" } else { "" };
     let default_str = match &column_description.default {
         Some(value) => {
             match render_value(value) {
                 Some(ref default) if column_description.required => format!("DEFAULT {}", default),
                 Some(_) => "".to_string(), // we use the default value right now only to smoothen migrations. So we only use it when absolutely needed.
                 None => "".to_string(),
-            }        
-        },
+            }
+        }
         None => "".to_string(),
     };
     let references_str = match (sql_family, &column_description.foreign_key) {
         (SqlFamily::Postgres, Some(fk)) => {
-            format!(
-                "REFERENCES \"{}\".\"{}\"(\"{}\")",
-                schema_name, fk.table, fk.column
-            )
+            format!("REFERENCES \"{}\".\"{}\"(\"{}\")", schema_name, fk.table, fk.column)
         }
-        (SqlFamily::Mysql, Some(fk)) => {
-            format!(
-                "REFERENCES `{}`.`{}`(`{}`)",
-                schema_name, fk.table, fk.column
-            )
-        }
-        (SqlFamily::Sqlite, Some(fk)) => {
-            format!("REFERENCES {}({})", fk.table, fk.column)
-        }
+        (SqlFamily::Mysql, Some(fk)) => format!("REFERENCES `{}`.`{}`(`{}`)", schema_name, fk.table, fk.column),
+        (SqlFamily::Sqlite, Some(fk)) => format!("REFERENCES {}({})", fk.table, fk.column),
         (_, None) => "".to_string(),
     };
     match (sql_family, &column_description.foreign_key) {
         (SqlFamily::Mysql, Some(_)) => {
             let add = if add_fk_prefix { "ADD" } else { "" };
             let fk_line = format!("{} FOREIGN KEY ({}) {}", add, column_name, references_str);
-            format!("{} {} {} {},{}", column_name, tpe_str, nullability_str, default_str, fk_line)
+            format!(
+                "{} {} {} {},{}",
+                column_name, tpe_str, nullability_str, default_str, fk_line
+            )
         }
-        _ =>
-            format!("{} {} {} {} {}", column_name, tpe_str, nullability_str, default_str, references_str),
+        _ => format!(
+            "{} {} {} {} {}",
+            column_name, tpe_str, nullability_str, default_str, references_str
+        ),
     }
 }
 
@@ -270,12 +279,12 @@ fn render_value(value: &Value) -> Option<String> {
         Value::Float(x) => Some(format!("{}", x)),
         Value::Decimal(x) => Some(format!("{}", x)),
         Value::String(x) => Some(format!("'{}'", x)),
-        
+
         Value::DateTime(x) => {
             let mut raw = format!("{}", x); // this will produce a String 1970-01-01 00:00:00 UTC
             raw.truncate(raw.len() - 4); // strip the UTC suffix
             Some(format!("'{}'", raw)) // add quotes
-        },
+        }
         Value::ConstantLiteral(x) => Some(format!("'{}'", x)), // this represents enum values
         _ => None,
     }

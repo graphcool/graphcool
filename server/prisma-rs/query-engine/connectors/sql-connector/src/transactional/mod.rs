@@ -4,61 +4,79 @@ mod database_writer;
 pub use database_reader::*;
 pub use database_writer::*;
 
-use crate::{error::*, query_builder::QueryBuilder, AliasedCondition, RawQuery, SqlRow};
+use crate::{error::*, query_builder::QueryBuilder, AliasedCondition, RawQuery, SqlRow, ToSqlRow};
 use connector::{
     error::RecordFinderInfo,
     filter::{Filter, RecordFinder},
 };
 use prisma_models::*;
-use prisma_query::ast::*;
-use serde_json::Value;
+use prisma_query::{
+    ast::*,
+    connector::{Queryable, Transactional},
+};
+use serde_json::{Map, Number, Value};
 use std::{convert::TryFrom, sync::Arc};
 
-/// A `Transactional` presents a database able to spawn transactions, execute
-/// queries in the transaction and commit the results to the database or do a
-/// rollback in case of an error.
-pub trait Transactional {
-    /// Wrap a closure into a transaction. All actions done through the
-    /// `Transaction` are commited automatically, or rolled back in case of any
-    /// error.
-    fn with_transaction<F, T>(&self, db: &str, f: F) -> crate::Result<T>
+pub trait TransactionalExt: Transactional {
+    fn with_tx_ext<F, T>(&self, _db: &str, _f: F) -> crate::Result<T>
     where
-        F: FnOnce(&mut Transaction) -> crate::Result<T>;
+        F: FnOnce(&mut TransactionExt) -> crate::Result<T>,
+    {
+        unimplemented!()
+    }
 }
 
-/// Abstraction of a database transaction. Start, commit and rollback should be
-/// handled per-database basis, `Transaction` providing a minimal interface over
-/// different databases.
-pub trait Transaction {
-    /// Truncates (clears) the entire database table.
-    fn truncate(&mut self, internal_data_model: InternalDataModelRef) -> crate::Result<()>;
+pub trait TransactionExt: Queryable {
+    fn filter(&mut self, q: Query, idents: &[TypeIdentifier]) -> crate::Result<Vec<SqlRow>> {
+        let result_set = self.query(q)?;
+        let mut sql_rows = Vec::new();
 
-    /// Write to the database, returning the change count and last id inserted.
-    fn write(&mut self, q: Query) -> crate::Result<Option<GraphqlId>>;
+        for row in result_set {
+            sql_rows.push(row.to_sql_row(idents)?);
+        }
 
-    /// Select multiple rows from the database.
-    fn filter(&mut self, q: Query, idents: &[TypeIdentifier]) -> crate::Result<Vec<SqlRow>>;
-
-    /// Executes a raw query string with no parameterization or safety,
-    /// resulting a Json value. Do not use internally anywhere in the code.
-    /// Provides user an escape hatch for using the database directly.
-    fn raw(&mut self, q: RawQuery) -> crate::Result<Value>;
+        Ok(sql_rows)
+    }
 
     /// Insert to the database. On success returns the last insert row id.
-    fn insert(&mut self, q: Insert) -> crate::Result<Option<GraphqlId>> {
-        Ok(self.write(q.into())?)
+    fn insert(&mut self, q: Insert) -> crate::Result<Option<Id>> {
+        Ok(self.execute(q.into())?)
     }
 
     /// Update the database. On success returns the number of rows updated.
     fn update(&mut self, q: Update) -> crate::Result<()> {
-        self.write(q.into())?;
+        self.execute(q.into())?;
         Ok(())
     }
 
     /// Delete from the database. On success returns the number of rows deleted.
     fn delete(&mut self, q: Delete) -> crate::Result<()> {
-        self.write(q.into())?;
+        self.execute(q.into())?;
         Ok(())
+    }
+
+    fn raw_json(&mut self, q: RawQuery) -> crate::Result<Value> {
+        if q.is_select() {
+            let result_set = self.query_raw(q.0.as_str(), &[])?;
+            let columns: Vec<String> = result_set.columns().map(ToString::to_string).collect();
+            let mut result = Vec::new();
+
+            for row in result_set.into_iter() {
+                let mut object = Map::new();
+
+                for (idx, p_value) in row.into_iter().enumerate() {
+                    let column_name: String = columns[idx].clone();
+                    object.insert(column_name, Value::from(p_value));
+                }
+
+                result.push(Value::Object(object));
+            }
+
+            Ok(Value::Array(result))
+        } else {
+            let changes = self.execute_raw(q.0.as_str(), &[])?;
+            Ok(Value::Number(Number::from(changes)))
+        }
     }
 
     /// Find one full record selecting all scalar fields.

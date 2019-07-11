@@ -18,6 +18,17 @@ pub enum GraphqlId {
     UUID(Uuid),
 }
 
+#[cfg(feature = "sql")]
+impl From<Id> for GraphqlId {
+    fn from(id: Id) -> Self {
+        match id {
+            Id::String(s) => GraphqlId::String(s),
+            Id::Int(i) => GraphqlId::Int(i),
+            Id::UUID(u) => GraphqlId::UUID(u),
+        }
+    }
+}
+
 impl GraphqlId {
     pub fn to_value(&self) -> GraphqlValue {
         match self {
@@ -299,6 +310,26 @@ impl<'a> From<PrismaValue> for DatabaseValue<'a> {
             PrismaValue::GraphqlId(id) => id.into(),
             PrismaValue::List(Some(l)) => l.into(),
             PrismaValue::List(_) => panic!("List values are not supported here"),
+        }
+    }
+}
+
+#[cfg(feature = "sql")]
+impl<'a> From<ParameterizedValue<'a>> for PrismaValue {
+    fn from(pv: ParameterizedValue<'a>) -> Self {
+        match pv {
+            ParameterizedValue::Null => PrismaValue::Null,
+            ParameterizedValue::Integer(i) => PrismaValue::Int(i),
+            ParameterizedValue::Real(f) => PrismaValue::Float(f),
+            ParameterizedValue::Text(s) => PrismaValue::String(s.into_owned()),
+            ParameterizedValue::Boolean(b) => PrismaValue::Boolean(b),
+            ParameterizedValue::Array(v) => {
+                let lst = v.into_iter().map(PrismaValue::from).collect();
+                PrismaValue::List(Some(lst))
+            }
+            ParameterizedValue::Json(val) => PrismaValue::Json(val),
+            ParameterizedValue::Uuid(uuid) => PrismaValue::Uuid(uuid),
+            ParameterizedValue::DateTime(dt) => PrismaValue::DateTime(dt),
         }
     }
 }

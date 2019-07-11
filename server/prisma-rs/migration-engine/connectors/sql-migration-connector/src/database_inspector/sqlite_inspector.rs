@@ -1,11 +1,11 @@
 use super::database_inspector_impl::{convert_introspected_columns, IntrospectedForeignKey};
 use super::*;
 use prisma_query::ast::ParameterizedValue;
-use prisma_query::Connectional;
+use prisma_query::connector::Database;
 use std::sync::Arc;
 
 pub struct Sqlite {
-    pub connectional: Arc<Connectional>,
+    pub database: Arc<Database>,
 }
 
 impl DatabaseInspector for Sqlite {
@@ -21,10 +21,8 @@ impl DatabaseInspector for Sqlite {
 }
 
 impl Sqlite {
-    pub fn new(connectional: Arc<Connectional>) -> Sqlite {
-        Sqlite {
-            connectional: connectional,
-        }
+    pub fn new(database: Arc<Database>) -> Sqlite {
+        Sqlite { database }
     }
 
     fn get_table_names(&self, schema: &String) -> Vec<String> {
@@ -40,10 +38,10 @@ impl Sqlite {
             schema
         );
 
-        let result_set = self.connectional.query_on_raw_connection(&schema, &sql, &[]).unwrap();
+        let result_set = self.database.query_on_raw_connection(&schema, &sql, &[]).unwrap();
         let names = result_set
             .into_iter()
-            .map(|row| row.get_as_string("name").unwrap())
+            .map(|row| row["name"].into_string().unwrap())
             .filter(|n| n != "sqlite_sequence")
             .collect();
         names
@@ -76,23 +74,22 @@ impl Sqlite {
     fn get_columns(&self, schema: &String, table: &String) -> Vec<IntrospectedColumn> {
         let sql = format!(r#"Pragma "{}".table_info ("{}")"#, schema, table);
 
-        let result_set = self.connectional.query_on_raw_connection(&schema, &sql, &[]).unwrap();
+        let result_set = self.database.query_on_raw_connection(&schema, &sql, &[]).unwrap();
         let columns = result_set
             .into_iter()
             .map(|row| {
-                let default_value = match row.get("dflt_value") {
-                    Ok(ParameterizedValue::Text(v)) => Some(v.to_string()),
-                    Ok(ParameterizedValue::Null) => None,
-                    Ok(p) => panic!(format!("expectd a string value but got {:?}", p)),
-                    Err(err) => panic!(format!("{}", err)),
+                let default_value = match row["dflt_value"] {
+                    ParameterizedValue::Text(v) => Some(v.to_string()),
+                    ParameterizedValue::Null => None,
+                    p => panic!(format!("expectd a string value but got {:?}", p)),
                 };
                 IntrospectedColumn {
-                    name: row.get_as_string("name").unwrap(),
+                    name: row["name"].into_string().unwrap(),
                     table: table.to_string(),
-                    tpe: row.get_as_string("type").unwrap(),
-                    is_required: row.get_as_bool("notnull").unwrap(),
+                    tpe: row["type"].into_string().unwrap(),
+                    is_required: row["notnull"].as_bool().unwrap(),
                     default: default_value,
-                    pk: row.get_as_integer("pk").unwrap() as u32,
+                    pk: row["pk"].as_i64().unwrap() as u32,
                 }
             })
             .collect();
@@ -103,16 +100,16 @@ impl Sqlite {
     fn get_foreign_constraints(&self, schema: &String, table: &String) -> Vec<IntrospectedForeignKey> {
         let sql = format!(r#"Pragma "{}".foreign_key_list("{}");"#, schema, table);
 
-        let result_set = self.connectional.query_on_raw_connection(&schema, &sql, &[]).unwrap();
+        let result_set = self.database.query_on_raw_connection(&schema, &sql, &[]).unwrap();
 
         let foreign_keys = result_set
             .into_iter()
             .map(|row| IntrospectedForeignKey {
                 name: "".to_string(),
                 table: table.to_string(),
-                column: row.get_as_string("from").unwrap(),
-                referenced_table: row.get_as_string("table").unwrap(),
-                referenced_column: row.get_as_string("to").unwrap(),
+                column: row["from"].into_string().unwrap(),
+                referenced_table: row["table"].into_string().unwrap(),
+                referenced_column: row["to"].into_string().unwrap(),
             })
             .collect();
 

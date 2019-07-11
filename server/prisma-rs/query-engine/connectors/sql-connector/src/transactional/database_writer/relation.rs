@@ -1,6 +1,6 @@
 use crate::{
     write_query::{NestedActions, WriteQueryBuilder},
-    Transaction,
+    TransactionExt,
 };
 use connector::filter::RecordFinder;
 use prisma_models::{GraphqlId, RelationFieldRef};
@@ -26,7 +26,7 @@ use std::sync::Arc;
 /// If none of the checks fail, the record will be disconnected to the
 /// previous relation before connecting to the given parent.
 pub fn connect(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     parent_id: &GraphqlId,
     actions: &NestedActions,
     record_finder: &RecordFinder,
@@ -40,15 +40,15 @@ pub fn connect(
     let child_id = conn.find_id(record_finder)?;
 
     if let Some(query) = actions.parent_removal(parent_id) {
-        conn.write(query)?;
+        conn.execute(query)?;
     }
 
     if let Some(query) = actions.child_removal(&child_id) {
-        conn.write(query)?;
+        conn.execute(query)?;
     }
 
     let relation_query = WriteQueryBuilder::create_relation(relation_field, parent_id, &child_id);
-    conn.write(relation_query)?;
+    conn.execute(relation_query)?;
 
     Ok(())
 }
@@ -65,7 +65,7 @@ pub fn connect(
 /// | true        | false         | false     | true          |
 /// | false       | true          | true      | false         |
 pub fn disconnect(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     parent_id: &GraphqlId,
     actions: &NestedActions,
     record_finder: &Option<RecordFinder>,
@@ -82,7 +82,7 @@ pub fn disconnect(
             let ids = conn.select_ids(select)?;
             check(ids.into_iter().next().is_some())?;
 
-            conn.write(actions.removal_by_parent(parent_id))?;
+            conn.execute(actions.removal_by_parent(parent_id))?;
         }
         Some(ref selector) => {
             let child_id = conn.find_id(selector)?;
@@ -91,7 +91,7 @@ pub fn disconnect(
             let ids = conn.select_ids(select)?;
             check(ids.into_iter().next().is_some())?;
 
-            conn.write(actions.removal_by_parent_and_child(parent_id, &child_id))?;
+            conn.execute(actions.removal_by_parent_and_child(parent_id, &child_id))?;
         }
     }
 
@@ -101,7 +101,7 @@ pub fn disconnect(
 /// Connects multiple records into the parent. Rules from `execute_connect`
 /// apply.
 pub fn set(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     parent_id: &GraphqlId,
     actions: &NestedActions,
     record_finders: &Vec<RecordFinder>,
@@ -112,17 +112,17 @@ pub fn set(
         check(ids.into_iter().next().is_some())?
     }
 
-    conn.write(actions.removal_by_parent(parent_id))?;
+    conn.execute(actions.removal_by_parent(parent_id))?;
 
     for selector in record_finders {
         let child_id = conn.find_id(selector)?;
 
         if !relation_field.is_list {
-            conn.write(actions.removal_by_child(&child_id))?;
+            conn.execute(actions.removal_by_child(&child_id))?;
         }
 
         let relation_query = WriteQueryBuilder::create_relation(Arc::clone(&relation_field), parent_id, &child_id);
-        conn.write(relation_query)?;
+        conn.execute(relation_query)?;
     }
 
     Ok(())
