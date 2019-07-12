@@ -1,5 +1,5 @@
 use super::update;
-use crate::{write_query::WriteQueryBuilder, Transaction};
+use crate::{write_query::WriteQueryBuilder, TransactionExt};
 use connector::filter::Filter;
 use prisma_models::{GraphqlId, ModelRef, PrismaArgs, PrismaListValue, RelationFieldRef};
 use std::sync::Arc;
@@ -9,7 +9,7 @@ use std::sync::Arc;
 ///
 /// Returns the number of updated items, if successful.
 pub fn execute<S>(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     model: ModelRef,
     filter: &Filter,
     non_list_args: &PrismaArgs,
@@ -42,7 +42,7 @@ where
 /// Updates nested items matching to filter, or if no filter is given, all
 /// nested items related to the given `parent_id`.
 pub fn execute_nested<S>(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     parent_id: &GraphqlId,
     filter: &Option<Filter>,
     relation_field: RelationFieldRef,

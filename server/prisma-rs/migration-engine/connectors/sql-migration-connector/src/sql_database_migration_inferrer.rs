@@ -1,7 +1,7 @@
-use crate::database_schema_calculator::{DatabaseSchemaCalculator, FieldExtensions, ModelExtensions };
+use crate::database_inspector::{DatabaseInspector, DatabaseSchema, Table};
+use crate::database_schema_calculator::{DatabaseSchemaCalculator, FieldExtensions, ModelExtensions};
 use crate::database_schema_differ::{DatabaseSchemaDiff, DatabaseSchemaDiffer};
 use crate::*;
-use crate::database_inspector::{DatabaseInspector, DatabaseSchema, Table};
 use datamodel::*;
 use migration_connector::steps::*;
 use migration_connector::*;
@@ -74,11 +74,7 @@ fn infer(
         schema_name,
         sql_family,
     )?;
-    let mut datamodel_diff_based = infer_based_on_datamodel_diff(
-        previous,
-        next,
-        model_steps
-    )?;
+    let mut datamodel_diff_based = infer_based_on_datamodel_diff(previous, next, model_steps)?;
     let mut combined_steps = Vec::new();
     let mut combined_rollback = Vec::new();
     combined_steps.append(&mut db_schema_diff_based.steps);
@@ -87,7 +83,7 @@ fn infer(
     combined_rollback.append(&mut datamodel_diff_based.rollback);
     Ok(SqlMigration {
         steps: combined_steps,
-        rollback: combined_rollback
+        rollback: combined_rollback,
     })
 }
 
@@ -102,34 +98,52 @@ fn infer_based_on_datamodel_diff(
     for step in model_steps {
         match step {
             MigrationStep::CreateField(create_field) => {
-                let model = next.models().find(|m|m.name == create_field.model).expect("Model for MigrationStep not found");
-                let field = model.fields().find(|f|f.name == create_field.name).expect("Field for MigrationStep not found");
+                let model = next
+                    .models()
+                    .find(|m| m.name == create_field.model)
+                    .expect("Model for MigrationStep not found");
+                let field = model
+                    .fields()
+                    .find(|f| f.name == create_field.name)
+                    .expect("Field for MigrationStep not found");
                 let index_name = format!("{}.{}._UNIQUE", model.db_name(), field.db_name());
                 if create_field.is_unique {
-                    steps.push(SqlMigrationStep::CreateIndex(CreateIndex{
+                    steps.push(SqlMigrationStep::CreateIndex(CreateIndex {
                         table: model.db_name(),
                         name: index_name.clone(),
                         tpe: IndexType::Unique,
                         columns: vec![field.db_name()],
                     }));
-                    rollback.push(SqlMigrationStep::DropIndex(DropIndex{
+                    rollback.push(SqlMigrationStep::DropIndex(DropIndex {
                         table: model.db_name(),
                         name: index_name,
                     }));
                 }
             }
             MigrationStep::UpdateField(update_field) => {
-                let old_model = previous.models().find(|m|m.name == update_field.model).expect("old Model for MigrationStep not found");
-                let old_field = old_model.fields().find(|f|f.name == update_field.name).expect("old Field for MigrationStep not found");
-                let new_model = next.models().find(|m|m.name == update_field.model).expect("new Model for MigrationStep not found");
-                let new_field = new_model.fields().find(|f|f.name == update_field.name).expect("new Field for MigrationStep not found");
+                let old_model = previous
+                    .models()
+                    .find(|m| m.name == update_field.model)
+                    .expect("old Model for MigrationStep not found");
+                let old_field = old_model
+                    .fields()
+                    .find(|f| f.name == update_field.name)
+                    .expect("old Field for MigrationStep not found");
+                let new_model = next
+                    .models()
+                    .find(|m| m.name == update_field.model)
+                    .expect("new Model for MigrationStep not found");
+                let new_field = new_model
+                    .fields()
+                    .find(|f| f.name == update_field.name)
+                    .expect("new Field for MigrationStep not found");
                 let index_name = format!("{}.{}._UNIQUE", old_model.db_name(), old_field.db_name());
 
-                let drop_index = SqlMigrationStep::DropIndex(DropIndex{
+                let drop_index = SqlMigrationStep::DropIndex(DropIndex {
                     table: new_model.db_name(),
                     name: index_name.clone(),
                 });
-                let create_index = SqlMigrationStep::CreateIndex(CreateIndex{
+                let create_index = SqlMigrationStep::CreateIndex(CreateIndex {
                     table: old_model.db_name(),
                     name: index_name,
                     tpe: IndexType::Unique,
@@ -145,16 +159,13 @@ fn infer_based_on_datamodel_diff(
                         steps.push(create_index);
                         rollback.push(drop_index);
                     }
-                    (_,_) => {}
+                    (_, _) => {}
                 }
             }
             _ => {}
         }
     }
-    Ok(SqlMigration{
-        steps,
-        rollback
-    })
+    Ok(SqlMigration { steps, rollback })
 }
 
 fn infer_based_on_db_schema_diff(

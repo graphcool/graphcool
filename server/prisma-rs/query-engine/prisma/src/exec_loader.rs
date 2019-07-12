@@ -8,7 +8,7 @@ use std::{convert::TryFrom, path::PathBuf, sync::Arc};
 use url::Url;
 
 #[cfg(feature = "sql")]
-use sql_connector::{Mysql, PostgreSql, SqlDatabase, Sqlite, Transactional};
+use sql_connector::{SqlCapabilities, SqlDatabase, TransactionalExt};
 
 pub fn load(source: &Box<dyn Source>) -> PrismaResult<Executor> {
     match source.connector_type() {
@@ -73,7 +73,7 @@ fn mysql(source: &Box<dyn Source>) -> PrismaResult<Executor> {
 #[cfg(feature = "sql")]
 fn sql_executor<T>(db_name: String, connector: SqlDatabase<T>) -> Executor
 where
-    T: Transactional + Send + Sync + 'static,
+    T: Transactional + SqlCapabilities + Send + Sync + 'static,
 {
     let arc = Arc::new(connector);
     let read_exec: ReadQueryExecutor = ReadQueryExecutor {

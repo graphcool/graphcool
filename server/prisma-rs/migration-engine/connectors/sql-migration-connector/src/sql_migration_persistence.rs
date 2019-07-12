@@ -4,13 +4,13 @@ use barrel::types;
 use chrono::*;
 use migration_connector::*;
 use prisma_query::ast::*;
-use prisma_query::{Connectional, ResultSet};
+use prisma_query::connector::{Database, ResultSet};
 use serde_json;
 use std::sync::Arc;
 
 pub struct SqlMigrationPersistence {
     pub sql_family: SqlFamily,
-    pub connection: Arc<Connectional>,
+    pub connection: Arc<Database>,
     pub schema_name: String,
     pub file_path: Option<String>,
 }
@@ -144,7 +144,7 @@ impl MigrationPersistence for SqlMigrationPersistence {
                     .query_on_connection(&self.schema_name, returning_insert.into())
                     .unwrap();
                 result_set.into_iter().next().map(|row| {
-                    cloned.revision = row.get_as_integer("revision").unwrap() as usize;
+                    cloned.revision = row["revision"].as_i64().unwrap() as usize;
                 });
             }
             // SqlFamily::Mysql => unimplemented!(),
@@ -244,32 +244,36 @@ fn parse_rows_new(result_set: &ResultSet) -> Vec<Migration> {
     result_set
         .into_iter()
         .map(|row| {
-            let datamodel_string: String = row.get_as_string(DATAMODEL_COLUMN).unwrap();
-            let datamodel_steps_json: String = row.get_as_string(DATAMODEL_STEPS_COLUMN).unwrap();
-            let database_migration_string: String = row.get_as_string(DATABASE_MIGRATION_COLUMN).unwrap();
-            let errors_json: String = row.get_as_string(ERRORS_COLUMN).unwrap();
-            let finished_at = match row.get(FINISHED_AT_COLUMN) {
-                Ok(ParameterizedValue::Null) => None,
-                Ok(x) => Some(convert_parameterized_date_value(&x)),
-                Err(err) => panic!(format!("{}", err)),
+            let datamodel_string: String = row[DATAMODEL_COLUMN].into_string().unwrap();
+            let datamodel_steps_json: String = row[DATAMODEL_STEPS_COLUMN].into_string().unwrap();
+
+            let database_migration_string: String = row[DATABASE_MIGRATION_COLUMN].into_string().unwrap();
+            let errors_json: String = row[ERRORS_COLUMN].into_string().unwrap();
+
+            let finished_at = match row[FINISHED_AT_COLUMN] {
+                ParameterizedValue::Null => None,
+                x => Some(convert_parameterized_date_value(&x)),
             };
 
             let datamodel_steps = serde_json::from_str(&datamodel_steps_json).unwrap();
             let datamodel = datamodel::parse(&datamodel_string).unwrap();
+
             let database_migration_json = serde_json::from_str(&database_migration_string).unwrap();
             let errors: Vec<String> = serde_json::from_str(&errors_json).unwrap();
+
             println!("{:?}", row.get(STARTED_AT_COLUMN).unwrap());
+
             Migration {
-                name: row.get_as_string(NAME_COLUMN).unwrap(),
-                revision: row.get_as_integer(REVISION_COLUMN).unwrap() as usize,
+                name: row[NAME_COLUMN].into_string().unwrap(),
+                revision: row[REVISION_COLUMN].as_i64().unwrap() as usize,
                 datamodel: datamodel,
-                status: MigrationStatus::from_str(row.get_as_string(STATUS_COLUMN).unwrap()),
-                applied: row.get_as_integer(APPLIED_COLUMN).unwrap() as usize,
-                rolled_back: row.get_as_integer(ROLLED_BACK_COLUMN).unwrap() as usize,
+                status: MigrationStatus::from_str(row[STATUS_COLUMN].into_string().unwrap()),
+                applied: row[APPLIED_COLUMN].as_i64().unwrap() as usize,
+                rolled_back: row[ROLLED_BACK_COLUMN].as_i64().unwrap() as usize,
                 datamodel_steps: datamodel_steps,
                 database_migration: database_migration_json,
                 errors: errors,
-                started_at: convert_parameterized_date_value(row.get(STARTED_AT_COLUMN).unwrap()),
+                started_at: convert_parameterized_date_value(&row[STARTED_AT_COLUMN]),
                 finished_at: finished_at,
             }
         })

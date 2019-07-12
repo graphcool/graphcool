@@ -1,11 +1,11 @@
-use crate::{write_query::WriteQueryBuilder, Transaction};
+use crate::{write_query::WriteQueryBuilder, TransactionExt};
 use connector::filter::RecordFinder;
 use prisma_models::{GraphqlId, ModelRef, PrismaArgs, PrismaListValue, RelationFieldRef};
 use std::sync::Arc;
 
 /// Updates one record and any associated list record in the database.
 pub fn execute<S>(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     record_finder: &RecordFinder,
     non_list_args: &PrismaArgs,
     list_args: &[(S, PrismaListValue)],
@@ -28,7 +28,7 @@ where
 /// Updates a nested item related to the parent, including any associated
 /// list values.
 pub fn execute_nested<S>(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     parent_id: &GraphqlId,
     record_finder: &Option<RecordFinder>,
     relation_field: RelationFieldRef,
@@ -50,7 +50,7 @@ where
 
 /// Updates list args related to the given records.
 pub fn update_list_args<S>(
-    conn: &mut Transaction,
+    conn: &mut TransactionExt,
     ids: &[GraphqlId],
     model: ModelRef,
     list_args: &[(S, PrismaListValue)],

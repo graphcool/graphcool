@@ -1,5 +1,5 @@
-use crate::*;
 use crate::database_inspector::{Column, DatabaseSchema, Table};
+use crate::*;
 
 const MIGRATION_TABLE_NAME: &str = "_Migration";
 
