@@ -286,7 +286,7 @@ fn parse_enum(token: &pest::iterators::Pair<'_, Rule>) -> Enum {
         Rule::ENUM_KEYWORD => { },
         Rule::identifier => name = Some(current.to_id()),
         Rule::directive => directives.push(parse_directive(&current)),
-        Rule::enum_field_declaration => values.push(EnumValue { name: current.as_str().to_string(), span: Span::from_pest(&current.as_span()) }),
+        Rule::enum_field_declaration => values.push(parse_value(&current)),
         Rule::doc_comment => comments.push(parse_doc_comment(&current)),
         _ => unreachable!("Encounterd impossible enum declaration during parsing: {:?}", current.tokens())
     }
@@ -301,6 +301,28 @@ fn parse_enum(token: &pest::iterators::Pair<'_, Rule>) -> Enum {
         },
         _ => panic!(
             "Encounterd impossible enum declaration during parsing, name is missing: {:?}",
+            token.as_str()
+        ),
+    };
+}
+
+fn parse_value(token: &pest::iterators::Pair<'_, Rule>) -> EnumValue {
+    let mut name: Option<Identifier> = None;
+    let mut comments: Vec<String> = Vec::new();
+    match_children! { token, current,
+        Rule::identifier => name = Some(current.to_id()),
+        Rule::doc_comment => comments.push(parse_doc_comment(&current)),
+        _ => unreachable!("Encounterd impossible enum value declaration during parsing: {:?}", current.tokens())
+    }
+
+    return match name {
+        Some(name) => EnumValue {
+            name: name.name,
+            span: Span::from_pest(&token.as_span()),
+            documentation: doc_comments_to_string(&comments),
+        },
+        _ => panic!(
+            "Encounterd impossible enum value declaration during parsing, name is missing: {:?}",
             token.as_str()
         ),
     };

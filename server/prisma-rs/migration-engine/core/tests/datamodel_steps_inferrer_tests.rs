@@ -273,7 +273,16 @@ fn infer_CreateEnum() {
     let expected = vec![MigrationStep::CreateEnum(CreateEnum {
         name: "Test".to_string(),
         db_name: None,
-        values: vec!["A".to_string(), "B".to_string()],
+        values: vec![
+            EnumValue {
+                name: "A".to_string(),
+                documentation: None,
+            },
+            EnumValue {
+                name: "B".to_string(),
+                documentation: None,
+            },
+        ],
     })];
     assert_eq!(steps, expected);
 }

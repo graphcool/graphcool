@@ -2,7 +2,7 @@ use super::dmmf::*;
 use crate::ast::Span;
 use crate::common::FromStrAndSpan;
 use crate::common::PrismaType;
-use crate::dml;
+use crate::{dml, EnumValue};
 use chrono::{DateTime, Utc};
 
 fn type_from_string(scalar: &str) -> PrismaType {
@@ -89,7 +89,14 @@ pub fn get_field_arity(is_required: bool, is_list: bool) -> dml::FieldArity {
 pub fn enum_from_dmmf(en: &Enum) -> dml::Enum {
     dml::Enum {
         name: en.name.clone(),
-        values: en.values.clone(),
+        values: en
+            .values
+            .iter()
+            .map(|x| EnumValue {
+                name: x.to_string(),
+                documentation: None,
+            })
+            .collect(),
         database_name: en.db_name.clone(),
         documentation: en.documentation.clone(),
     }

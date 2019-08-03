@@ -238,7 +238,7 @@ impl FieldExtensions for Field {
                     .values
                     .first()
                     .expect(&format!("Enum {} did not contain any values.", enum_name));
-                Value::String(first_value.to_string())
+                Value::String(first_value.name.to_string())
             }
             _ => unimplemented!("this functions must only be called for scalar fields"),
         })

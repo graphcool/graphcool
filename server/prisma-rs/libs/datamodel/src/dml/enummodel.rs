@@ -7,16 +7,22 @@ pub struct Enum {
     /// Name of the enum.
     pub name: String,
     /// Values of the enum.
-    pub values: Vec<String>,
+    pub values: Vec<EnumValue>,
     /// Comments for this enum.
     pub documentation: Option<String>,
     /// Database internal name of this enum.
     pub database_name: Option<String>,
 }
 
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct EnumValue {
+    pub name: String,
+    pub documentation: Option<String>,
+}
+
 impl Enum {
     /// Creates a new enum with the given name and values.
-    pub fn new(name: &str, values: Vec<String>) -> Enum {
+    pub fn new(name: &str, values: Vec<EnumValue>) -> Enum {
         Enum {
             name: String::from(name),
             values: values,

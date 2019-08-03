@@ -31,7 +31,7 @@ fn get_field_type(field: &dml::Field) -> String {
 pub fn enum_to_dmmf(en: &dml::Enum) -> Enum {
     Enum {
         name: en.name.clone(),
-        values: en.values.clone(),
+        values: en.values.iter().map(|v| v.name.to_string()).collect(),
         db_name: en.database_name.clone(),
         documentation: en.documentation.clone(),
     }

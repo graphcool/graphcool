@@ -363,6 +363,7 @@ pub struct EnumValue {
     pub name: String,
     /// The location of this enum value in the text representation.
     pub span: Span,
+    pub documentation: Option<Comment>,
 }
 
 impl WithName for EnumValue {

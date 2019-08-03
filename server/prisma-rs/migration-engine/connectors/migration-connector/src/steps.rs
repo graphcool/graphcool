@@ -172,7 +172,7 @@ pub struct DeleteField {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CreateEnum {
     pub name: String,
-    pub values: Vec<String>,
+    pub values: Vec<EnumValue>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub db_name: Option<String>,
 }
@@ -195,7 +195,7 @@ pub struct UpdateEnum {
     pub new_name: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub values: Option<Vec<String>>,
+    pub values: Option<Vec<EnumValue>>,
 
     #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "some_option")]
     pub db_name: Option<Option<String>>,

@@ -13,6 +13,7 @@
 // Treat every whitespace the same for now.
 WHITESPACE = @{ SPACE_SEPARATOR | NEWLINE }
 // Comment ignores everything until end of line.
+// This rule is never used in the parser. It just exists to allow comments starting with // which will be ignored by the parser.
 COMMENT = @{ (!"///") ~ "//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE? }
 BLOCK_OPEN = @{ "{" }
 BLOCK_CLOSE = @{ "}" }
@@ -108,7 +109,7 @@ model_declaration = { doc_comment* ~ (MODEL_KEYWORD | TYPE_KEYWORD) ~ identifier
 // ######################################
 // Enum declarations
 // ######################################
-enum_field_declaration = @{ identifier }
+enum_field_declaration = { doc_comment* ~ identifier }
 enum_declaration = { doc_comment* ~ ENUM_KEYWORD ~ identifier ~ BLOCK_OPEN ~ (enum_field_declaration | ( "@@" ~ directive )  )* ~ BLOCK_CLOSE }
 
 // ######################################

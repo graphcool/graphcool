@@ -32,6 +32,7 @@ fn parse_basic_enum() {
         ADMIN
         ADMIN_USER
         Admin_User
+        /// This is a comment
         HHorse99
     }
     "#;
@@ -44,7 +45,9 @@ fn parse_basic_enum() {
     role_enum.assert_has_value("Admin");
     role_enum.assert_has_value("ADMIN_USER");
     role_enum.assert_has_value("Admin_User");
-    role_enum.assert_has_value("HHorse99");
+    role_enum
+        .assert_has_value("HHorse99")
+        .assert_has_comment("This is a comment");
 }
 
 #[test]

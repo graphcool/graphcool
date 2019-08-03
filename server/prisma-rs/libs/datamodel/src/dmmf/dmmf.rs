@@ -52,6 +52,7 @@ pub struct Model {
     pub documentation: Option<String>,
 }
 
+// TODO: should the dmmf also have a rich structure for enum values?
 #[serde(rename_all = "camelCase")]
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Enum {

@@ -81,8 +81,9 @@ impl LowerDmlToAst {
                 .values
                 .iter()
                 .map(|v| ast::EnumValue {
-                    name: v.clone(),
+                    name: v.name.clone(),
                     span: ast::Span::empty(),
+                    documentation: enm.documentation.clone().map(|text| ast::Comment { text }),
                 })
                 .collect(),
             directives: self.directives.enm.serialize(enm, datamodel)?,

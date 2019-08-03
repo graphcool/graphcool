@@ -29,7 +29,11 @@ pub trait ModelAsserts {
 }
 
 pub trait EnumAsserts {
-    fn assert_has_value(&self, t: &str) -> &Self;
+    fn assert_has_value(&self, t: &str) -> &dml::EnumValue;
+}
+
+pub trait EnumValueAsserts {
+    fn assert_has_comment(&self, c: &str) -> &Self;
 }
 
 pub trait DatamodelAsserts {
@@ -206,14 +210,19 @@ impl ModelAsserts for dml::Model {
 }
 
 impl EnumAsserts for dml::Enum {
-    fn assert_has_value(&self, t: &str) -> &Self {
+    fn assert_has_value(&self, t: &str) -> &dml::EnumValue {
         let pred = String::from(t);
         self.values
             .iter()
-            .find(|x| **x == pred)
-            .expect(format!("Field {} not found", t).as_str());
+            .find(|x| x.name == pred)
+            .expect(format!("Value {} not found", t).as_str())
+    }
+}
 
-        return self;
+impl EnumValueAsserts for dml::EnumValue {
+    fn assert_has_comment(&self, c: &str) -> &Self {
+        assert_eq!(self.documentation, Some(c.to_string()));
+        self
     }
 }
 

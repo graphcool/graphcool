@@ -91,7 +91,14 @@ impl LiftAstToDml {
     fn lift_enum(&self, ast_enum: &ast::Enum) -> Result<dml::Enum, ErrorCollection> {
         let mut en = dml::Enum::new(
             &ast_enum.name.name,
-            ast_enum.values.iter().map(|x| x.name.clone()).collect(),
+            ast_enum
+                .values
+                .iter()
+                .map(|ast_value| dml::EnumValue {
+                    name: ast_value.name.clone(),
+                    documentation: ast_value.documentation.clone().map(|x| x.text),
+                })
+                .collect(),
         );
         en.documentation = ast_enum.documentation.clone().map(|comment| comment.text);
 
