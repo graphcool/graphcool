@@ -1,5 +1,7 @@
 package util
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.scalatest.Suite
 
 case class Project(
@@ -43,8 +45,16 @@ trait Dsl {
     // GetFieldFromSQLUniqueException blows up if we generate longer names, since we then exceed the postgres limits for constraint names
     // todo: actually fix GetFieldFromSQLUniqueException instead
     val nameThatMightBeTooLong = suite.getClass.getSimpleName
-    nameThatMightBeTooLong.substring(0, Math.min(32, nameThatMightBeTooLong.length))
+    val validName              = nameThatMightBeTooLong.substring(0, Math.min(30, nameThatMightBeTooLong.length))
+    val wasShortened           = validName.length != nameThatMightBeTooLong.length
+    if (wasShortened) {
+      validName + disambiguationCounter.incrementAndGet().toString
+    } else {
+      validName
+    }
   }
+
+  private val disambiguationCounter = new AtomicInteger(0)
 }
 
 object ProjectDsl extends Dsl

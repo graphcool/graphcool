@@ -18,6 +18,7 @@ case class QueryEngineResponse(status: Int, body: String) {
 
 case class TestServer() extends PlayJsonExtensions {
   import scala.concurrent.ExecutionContext.Implicits.global
+  println(s"TestServers.nextPort: ${TestServers.nextPort.get()}")
 
   def query(
       query: String,
@@ -63,45 +64,45 @@ case class TestServer() extends PlayJsonExtensions {
       query: String,
       project: Project
   ): Future[JsValue] = {
-    val (port, queryEngineProcess) = startQueryEngine(project)
-    println(s"query engine started on port $port")
+    val port = TestServers.getQueryEngine(project)
+//    println(s"query engine started on port $port")
     println(s"Query: $query")
     Future {
       queryPrismaProcess(query, port)
     }.map(r => r.jsonBody.get)
       .transform { r =>
         println(s"Query result: $r")
-        queryEngineProcess.destroyForcibly().waitFor()
+//        queryEngineProcess.destroyForcibly().waitFor()
         r
       }
   }
 
-  val nextPort = new AtomicInteger(4000)
-
-  private def startQueryEngine(project: Project): (Int, java.lang.Process) = {
-    import java.lang.ProcessBuilder.Redirect
-
-    // TODO: discuss with Dom whether we want to keep the legacy mode
-    val pb         = new java.lang.ProcessBuilder(EnvVars.prismaBinaryPath, "--legacy")
-    val workingDir = new java.io.File(".")
-
-    val fullDataModel = project.dataModelWithDataSourceConfig
-    // Important: Rust requires UTF-8 encoding (encodeToString uses Latin-1)
-    val encoded = Base64.getEncoder.encode(fullDataModel.getBytes(StandardCharsets.UTF_8))
-    val envVar  = new String(encoded, StandardCharsets.UTF_8)
-    val port    = nextPort.incrementAndGet()
-
-    pb.environment.put("PRISMA_DML", envVar)
-    pb.environment.put("PORT", port.toString)
-
-    pb.directory(workingDir)
-    pb.redirectErrorStream(true)
-    pb.redirectOutput(Redirect.INHERIT)
-
-    val process = pb.start
-    Thread.sleep(100) // Offsets process startup latency
-    (port, process)
-  }
+//  val nextPort = new AtomicInteger(4000)
+//
+//  private def startQueryEngine(project: Project): (Int, java.lang.Process) = {
+//    import java.lang.ProcessBuilder.Redirect
+//
+//    // TODO: discuss with Dom whether we want to keep the legacy mode
+//    val pb         = new java.lang.ProcessBuilder(EnvVars.prismaBinaryPath, "--legacy")
+//    val workingDir = new java.io.File(".")
+//
+//    val fullDataModel = project.dataModelWithDataSourceConfig
+//    // Important: Rust requires UTF-8 encoding (encodeToString uses Latin-1)
+//    val encoded = Base64.getEncoder.encode(fullDataModel.getBytes(StandardCharsets.UTF_8))
+//    val envVar  = new String(encoded, StandardCharsets.UTF_8)
+//    val port    = nextPort.incrementAndGet()
+//
+//    pb.environment.put("PRISMA_DML", envVar)
+//    pb.environment.put("PORT", port.toString)
+//
+//    pb.directory(workingDir)
+//    pb.redirectErrorStream(true)
+//    pb.redirectOutput(Redirect.INHERIT)
+//
+//    val process = pb.start
+//    Thread.sleep(100) // Offsets process startup latency
+//    (port, process)
+//  }
 
   private def queryPrismaProcess(query: String, port: Int): QueryEngineResponse = {
     val url = new URL(s"http://127.0.0.1:$port")
@@ -136,4 +137,41 @@ case class TestServer() extends PlayJsonExtensions {
   }
 
   private def awaitInfinitely[T](awaitable: Awaitable[T]): T = Await.result(awaitable, Duration.Inf)
+}
+
+object TestServers {
+  val cache    = Cache.unbounded[Project, (Int, java.lang.Process)]()
+  val nextPort = new AtomicInteger(4000)
+
+  def getQueryEngine(project: Project): Int = {
+    val (port, _) = cache.getOrUpdate(project, () => {
+      startQueryEngine(project)
+    })
+    port
+  }
+
+  private def startQueryEngine(project: Project): (Int, java.lang.Process) = {
+    import java.lang.ProcessBuilder.Redirect
+
+    // TODO: discuss with Dom whether we want to keep the legacy mode
+    val pb         = new java.lang.ProcessBuilder(EnvVars.prismaBinaryPath, "--legacy")
+    val workingDir = new java.io.File(".")
+
+    val fullDataModel = project.dataModelWithDataSourceConfig
+    // Important: Rust requires UTF-8 encoding (encodeToString uses Latin-1)
+    val encoded = Base64.getEncoder.encode(fullDataModel.getBytes(StandardCharsets.UTF_8))
+    val envVar  = new String(encoded, StandardCharsets.UTF_8)
+    val port    = nextPort.incrementAndGet()
+
+    pb.environment.put("PRISMA_DML", envVar)
+    pb.environment.put("PORT", port.toString)
+
+    pb.directory(workingDir)
+    pb.redirectErrorStream(true)
+    pb.redirectOutput(Redirect.INHERIT)
+
+    val process = pb.start
+    Thread.sleep(100) // Offsets process startup latency
+    (port, process)
+  }
 }
