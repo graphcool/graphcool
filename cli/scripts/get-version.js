@@ -1,4 +1,4 @@
-require('isomorphic-fetch')
+require('cross-fetch/polyfill')
 
 const packages = [
   'prisma',

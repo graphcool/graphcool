@@ -120,7 +120,7 @@ extend type Query {
 The implementation of the resolver then retrieves the `breedName` argument from the incoming `event` and makes the call to the mentioned REST endpoint. It also needs to ensure the returned data has the right structure, i.e. it needs to adhere to the defined `RandomBreedImagePayload` type.
 
 ```js
-require('isomorphic-fetch')
+require('cross-fetch/polyfill')
 
 module.exports = event => {
 

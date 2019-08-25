@@ -1,4 +1,4 @@
-require('isomorphic-fetch')
+require('cross-fetch/polyfill')
 
 async function waitUntilPublished(tag) {
   const res = await fetch(

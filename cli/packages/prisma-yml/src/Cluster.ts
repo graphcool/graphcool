@@ -1,5 +1,5 @@
 const debug = require('debug')('environment')
-import 'isomorphic-fetch'
+import 'cross-fetch/polyfill'
 import * as jwt from 'jsonwebtoken'
 import { cloudApiEndpoint } from './constants'
 import { GraphQLClient } from 'graphql-request'
