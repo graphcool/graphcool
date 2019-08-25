@@ -45,7 +45,11 @@ export class Seeder {
     }
 
     if (seed.import) {
-      const source = path.join(this.config.definitionDir, seed.import)
+      let source = seed.import
+
+      if (!path.isAbsolute(seed.import)) {
+        source = path.join(this.config.definitionDir, seed.import)
+      }
 
       debug(source)
 
