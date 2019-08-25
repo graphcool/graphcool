@@ -18,40 +18,33 @@ import slick.jdbc.PostgresProfile.api._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-case class PostgresDeployConnector(
-    dbConfig: DatabaseConfig,
-    driver: Driver
-)(implicit ec: ExecutionContext)
-    extends DeployConnector {
+case class PostgresDeployConnector(dbConfig: DatabaseConfig, driver: Driver)(implicit ec: ExecutionContext) extends DeployConnector {
 
   override def capabilities: ConnectorCapabilities = ConnectorCapabilities.postgresPrototype
 
-  lazy val internalDatabases   = PostgresInternalDatabaseDefs(dbConfig, driver)
-  lazy val setupDatabases      = internalDatabases.setupDatabase
-  lazy val managementDatabases = internalDatabases.managementDatabase
-  lazy val projectDatabases    = internalDatabases.managementDatabase
+  lazy val internalDatabaseDefs = PostgresInternalDatabaseDefs(dbConfig, driver)
+  lazy val setupDatabases       = internalDatabaseDefs.setupDatabases
+  lazy val managementDatabases  = internalDatabaseDefs.managementDatabases
+  lazy val managementDatabase   = internalDatabaseDefs.managementDatabases.primary
 
-  lazy val managementDatabase = managementDatabases.primary.database
-  lazy val projectDatabase    = projectDatabases.primary.database
+  override lazy val projectPersistence: ProjectPersistence         = JdbcProjectPersistence(managementDatabase, dbConfig)
+  override lazy val migrationPersistence: MigrationPersistence     = JdbcMigrationPersistence(managementDatabase)
+  override lazy val cloudSecretPersistence: CloudSecretPersistence = JdbcCloudSecretPersistence(managementDatabase)
+  override lazy val telemetryPersistence: TelemetryPersistence     = JdbcTelemetryPersistence(managementDatabase)
+  override lazy val databaseInspector: DatabaseInspector           = PostgresDatabaseInspector(managementDatabase)
 
-  lazy val postgresTypeMapper = PostgresTypeMapper()
-  lazy val mutationBuilder    = PostgresJdbcDeployDatabaseMutationBuilder(managementDatabases.primary, postgresTypeMapper)
-
-  override lazy val projectPersistence: ProjectPersistence           = JdbcProjectPersistence(managementDatabases.primary, dbConfig)
-  override lazy val migrationPersistence: MigrationPersistence       = JdbcMigrationPersistence(managementDatabases.primary)
-  override lazy val cloudSecretPersistence: CloudSecretPersistence   = JdbcCloudSecretPersistence(managementDatabases.primary)
-  override lazy val telemetryPersistence: TelemetryPersistence       = JdbcTelemetryPersistence(managementDatabases.primary)
+  lazy val postgresTypeMapper                                        = PostgresTypeMapper()
+  lazy val mutationBuilder                                           = PostgresJdbcDeployDatabaseMutationBuilder(managementDatabase, postgresTypeMapper)
   override lazy val deployMutactionExecutor: DeployMutactionExecutor = JdbcDeployMutactionExecutor(mutationBuilder)
-  override lazy val databaseInspector: DatabaseInspector             = PostgresDatabaseInspector(projectDatabases.primary)
 
   override def createProjectDatabase(id: String): Future[Unit] = {
     val action = mutationBuilder.createDatabaseForProject(id = id)
-    projectDatabase.run(action)
+    managementDatabase.database.run(action)
   }
 
   override def deleteProjectDatabase(id: String): Future[Unit] = {
     val action = mutationBuilder.deleteProjectDatabase(projectId = id).map(_ => ())
-    projectDatabase.run(action)
+    managementDatabase.database.run(action)
   }
 
   override def getAllDatabaseSizes(): Future[Vector[DatabaseSize]] = {
@@ -66,33 +59,31 @@ case class PostgresDeployConnector(
       }
     }
 
-    projectDatabase.run(action)
+    managementDatabase.database.run(action)
   }
 
-  override def clientDBQueries(project: Project): ClientDbQueries      = JdbcClientDbQueries(project, projectDatabases.primary)
+  override def clientDBQueries(project: Project): ClientDbQueries      = JdbcClientDbQueries(project, managementDatabase)
   override def getOrCreateTelemetryInfo(): Future[TelemetryInfo]       = telemetryPersistence.getOrCreateInfo()
   override def updateTelemetryInfo(lastPinged: DateTime): Future[Unit] = telemetryPersistence.updateTelemetryInfo(lastPinged)
-  override def projectIdEncoder: ProjectIdEncoder                      = ProjectIdEncoder('$')
+  override val projectIdEncoder: ProjectIdEncoder                      = ProjectIdEncoder('$')
 
   override def initialize(): Future[Unit] = {
     // We're ignoring failures for createDatabaseAction as there is no "create if not exists" in psql
     setupDatabases.primary.database
-      .run(InternalDatabaseSchema.createDatabaseAction(internalDatabases.dbName))
+      .run(InternalDatabaseSchema.createDatabaseAction(internalDatabaseDefs.dbName))
       .transformWith { _ =>
-        val action = InternalDatabaseSchema.createSchemaActions(internalDatabases.managementSchemaName, recreate = false)
-        projectDatabase.run(action)
+        val action = InternalDatabaseSchema.createSchemaActions(internalDatabaseDefs.managementSchemaName, recreate = false)
+        managementDatabase.database.run(action)
       }
       .flatMap(_ => setupDatabases.shutdown)
   }
 
-  override def reset(): Future[Unit] = truncateManagementTablesInDatabase(managementDatabase)
+  override def reset(): Future[Unit] = truncateManagementTablesInDatabase(managementDatabase.database)
 
-  override def shutdown() = {
-    managementDatabases.shutdown
-  }
+  override def shutdown(): Future[Unit] = managementDatabases.shutdown
 
   override def managementLock(): Future[Unit] = {
-    managementDatabase.run(sql"SELECT pg_advisory_lock(1000);".as[String].head.withPinnedSession).transformWith {
+    managementDatabase.database.run(sql"SELECT pg_advisory_lock(1000);".as[String].head.withPinnedSession).transformWith {
       case Success(_)   => Future.successful(())
       case Failure(err) => Future.failed(err)
     }
@@ -108,7 +99,7 @@ case class PostgresDeployConnector(
   private def getTables()(implicit ec: ExecutionContext): DBIOAction[Vector[String], NoStream, Read] = {
     sql"""SELECT table_name
           FROM information_schema.tables
-          WHERE table_schema = '#${internalDatabases.managementSchemaName}'
+          WHERE table_schema = '#${internalDatabaseDefs.managementSchemaName}'
           AND table_type = 'BASE TABLE';""".as[String]
   }
 

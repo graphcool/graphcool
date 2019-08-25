@@ -10,12 +10,12 @@ case class PostgresInternalDatabaseDefs(dbConfig: DatabaseConfig, driver: Driver
   import slick.jdbc.PostgresProfile.api._
 
   // Only used during setup - this is the default PSQL db, which is only used for administrative commands
-  lazy val setupDatabase = getDatabase("postgres", "public")
+  lazy val setupDatabases = getDatabase("postgres", "public")
 
   // Used during runtime & setup
   lazy val dbName               = dbConfig.database.getOrElse("prisma")
   lazy val managementSchemaName = dbConfig.managementSchema.getOrElse("management")
-  lazy val managementDatabase   = getDatabase(dbName, managementSchemaName)
+  lazy val managementDatabases  = getDatabase(dbName, managementSchemaName)
 
   private def getDatabase(dbToUse: String, schemaToUse: String): Databases = {
     val masterDb      = databaseForConfig(dbToUse, schemaToUse)

@@ -126,7 +126,7 @@ trait PassiveDeploySpecBase extends DeploySpecBase with DataModelV11Base { self:
   private def setupProjectDatabaseForProject(schemaName: String, name: String, stage: String, sql: String): Unit = {
     val (session, defaultSchema) = deployConnector match {
       case c: PostgresDeployConnector =>
-        val session = c.managementDatabase.createSession()
+        val session = c.managementDatabase.database.createSession()
         val default = s"""SET search_path TO "$schemaName";"""
         (session, default)
 
@@ -166,7 +166,7 @@ trait PassiveDeploySpecBase extends DeploySpecBase with DataModelV11Base { self:
 
   private def executeSql(sql: String*): Unit = {
     val (session, defaultSchema) = deployConnector match {
-      case c: PostgresDeployConnector => (c.managementDatabase.createSession(), s"""SET search_path TO "$projectId";""")
+      case c: PostgresDeployConnector => (c.managementDatabase.database.createSession(), s"""SET search_path TO "$projectId";""")
       case c: MySqlDeployConnector    => (c.managementDatabase.database.createSession(), s"USE `$projectId`;")
       case c: SQLiteDeployConnector   => (c.managementDatabase.database.createSession(), s"USE `$projectId`;")
       case x                          => sys.error(s"$x is not supported here")

@@ -16,7 +16,7 @@ trait PassiveConnectorSpec extends FlatSpec with Matchers with ApiSpecBase {
 
   def executeOnInternalDatabase(sql: String) = {
     val connector = deployConnector.asInstanceOf[PostgresDeployConnector]
-    val session   = connector.managementDatabase.createSession()
+    val session   = connector.managementDatabase.database.createSession()
     val statement = session.createStatement()
     statement.execute(sql)
     session.close()

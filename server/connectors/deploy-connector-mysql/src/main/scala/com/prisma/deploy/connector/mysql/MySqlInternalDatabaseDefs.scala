@@ -10,10 +10,10 @@ import slick.jdbc.MySQLProfile
 case class MySqlInternalDatabaseDefs(dbConfig: DatabaseConfig, driver: Driver) {
   import slick.jdbc.MySQLProfile.api._
 
-  val managementSchemaName = dbConfig.managementSchema.getOrElse("prisma")
+  lazy val setupDatabases = databases(root = true)
 
-  lazy val setupDatabases      = databases(root = true)
-  lazy val managementDatabases = databases(root = false)
+  lazy val managementSchemaName = dbConfig.managementSchema.getOrElse("prisma")
+  lazy val managementDatabases  = databases(root = false)
 
   private def databases(root: Boolean): Databases = {
     val config        = typeSafeConfigFromDatabaseConfig(dbConfig, root)
