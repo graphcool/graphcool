@@ -72,18 +72,6 @@ prisma generate
 
 The Prisma client library in the `/generated/prisma-client` directory is now being updated and its API has been adjusted to use the new datamodel.
 
-<Info>
-
-You can ensure that your Prisma client is automatically being updated after every deploy by adding the following lines to your `prisma.yml`:
-
-```yml copy
-hooks:
-  post-deploy:
-    - prisma generate
-```
-
-</Info>
-
 ## Read and write nested objects
 
 The Prisma client API allows to write nested objects in a single transaction without having to manually control when the transaction starts or ends.
