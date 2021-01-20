@@ -202,7 +202,7 @@ A object type is defined in the data model with the keyword `type`:
 type Article {
   id: ID! @unique
   text: String!
-  isPublished: Boolean @default(value: "false")
+  isPublished: Boolean @default(value: false)
 }
 ```
 
