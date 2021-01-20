@@ -368,7 +368,7 @@ _Delete all posts that were created before 2018_:
 
 ```js
 const deletePostCount = await prisma
-  .deleteManyPost({
+  .deleteManyPosts({
     createdAt_lte: "2018"
   }).count()
 ```
