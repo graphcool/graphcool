@@ -33,7 +33,7 @@
     "@types/fs-extra": "^5.0.0",
     "@types/node": "^8.0.22",
     "aws-sdk": "^2.373.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "dotenv-cli": "^1.4.0",
     "git-commit-push-via-github-api": "1.0.1",
     "husky": "^0.14.3",
