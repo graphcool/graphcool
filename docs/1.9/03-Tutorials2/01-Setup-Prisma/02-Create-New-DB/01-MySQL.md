@@ -190,7 +190,7 @@ Your Prisma API is now deployed and ready to receive your queries, mutations and
 
 ## Step 6: Explore Prisma's GraphQL API in a GraphQL Playground
 
-So your Prisma servier is deployed - but how do you know how to interact with it? What does its API actually look like?
+So your Prisma server is deployed - but how do you know how to interact with it? What does its API actually look like?
 
 In general, the generated API allows to perform CRUD operations on the types in your data model. It also exposes GraphQL subscriptions which allow clients to _subscribe_ to certain _events_ and receive updates in realtime.
 

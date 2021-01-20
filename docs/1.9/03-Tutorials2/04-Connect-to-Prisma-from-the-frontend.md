@@ -100,7 +100,7 @@ This is what your directory will look like after you create all folders and file
 
 <Instruction>
 
-Run the following commands to create all the files you need to start boostrap your frontend.
+Run the following commands to create all the files you need to start bootstrap your frontend.
 
 ```bash
 yarn init -y

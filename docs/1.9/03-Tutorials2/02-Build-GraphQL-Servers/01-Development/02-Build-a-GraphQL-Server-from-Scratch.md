@@ -614,7 +614,7 @@ In any case, you can see that the implementation of the resolvers is almost triv
 
 ### Generating the Prisma database schema
 
-There is one missing piece before you can start the server again, and that is the dubios `generated/prisma.graphql` file.
+There is one missing piece before you can start the server again, and that is the dubious `generated/prisma.graphql` file.
 
 The workflow for getting a hold of this file is based the [GraphQL CLI](https://github.com/graphql-cli/graphql-cli) as well as on [`graphql-config`](https://github.com/graphcool/graphql-config) (a configuration standard for GraphQL projects). To get this up-and-running, first need to installed the GraphQL CLI and then create a `.graphqlconfig` file.
 

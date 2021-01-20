@@ -62,7 +62,7 @@ Follow the instructions in the browser to register with Prisma Cloud.
 
 </Instruction>
 
-After you've sucessfully logged in, you need to select the _region_ for your Demo server.
+After you've successfully logged in, you need to select the _region_ for your Demo server.
 
 <Instruction>
 

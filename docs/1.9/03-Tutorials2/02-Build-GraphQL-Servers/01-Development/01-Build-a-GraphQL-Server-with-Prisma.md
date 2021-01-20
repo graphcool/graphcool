@@ -175,7 +175,7 @@ There's one odd thing about the GraphQL schema right now though: The `Post` and 
 
 The next step is to download the GraphQL schema of Prisma's GraphQL API (also referred to as _Prisma database schema_) into your project so you can properly import the SDL types from there.
 
-Technically speaking, this is not absolutely necessary since you could also just _redefine_ identical `Post` and `User` types in `schema.graphql`. However, this would mean that you now have _two_ separate locations where these type definitions live. Whenever you now wanted to update the types, you'd have to do that twice. It is therefore considered _best pratice_ to import the types from Prisma's GraphQL schema.
+Technically speaking, this is not absolutely necessary since you could also just _redefine_ identical `Post` and `User` types in `schema.graphql`. However, this would mean that you now have _two_ separate locations where these type definitions live. Whenever you now wanted to update the types, you'd have to do that twice. It is therefore considered _best practice_ to import the types from Prisma's GraphQL schema.
 
 Downloading the Prisma database schema is done using the [GraphQL CLI](https://oss.prisma.io/content/GraphQL-CLI/01-Overview.html) and [GraphQL Config](https://oss.prisma.io/content/GraphQL-Config/Overview.html).
 
