@@ -7,7 +7,7 @@ import { Variables } from './Variables'
 import { Args } from './types/common'
 import { Output, IOutput } from './Output'
 const debug = require('debug')('yaml')
-import * as stringify from 'json-stable-stringify'
+import * as stringify from 'fast-json-stable-stringify'
 import chalk from 'chalk'
 
 const ajv = new Ajv()
