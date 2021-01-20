@@ -44,7 +44,7 @@ The datamodel is written in `.prisma`-files and uses [GraphQL SDL syntax](https:
 There are two cases how the datamodel can be created:
 
 - **Manually written**: When the datamodel is written manually from scratch, the datamodel is also used to perform database migrations (this only applies for _new_ databases without existing data). The model definitions of the datamodel not only determine the API operations of the Prisma client, but are also mapped to the database (meaning they're used to perform database migrations in a declarative way).
-- **Derived from an existing database schema (introspection)**: When you're starting to use Prisma with an existing database, the datamodel is derived from the existing database schema. In this case, Prisma is not used to perform database migrations (instead, you keep migrating the database manually as you used too).
+- **Derived from an existing database schema (introspection)**: When you're starting to use Prisma with an existing database, the datamodel is derived from the existing database schema. In this case, Prisma is not used to perform database migrations (instead, you keep migrating the database manually as you used to).
 
 > While there currently is a clear rule for when you can use Prisma to perform database migrations and when not, it is planned to unify the two approaches. This means you'll always have the flexibility to perform migrations manually or using Prisma. [Learn more](https://github.com/prisma/prisma/issues/3022).
 
