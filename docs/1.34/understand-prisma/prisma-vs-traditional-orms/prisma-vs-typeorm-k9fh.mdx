@@ -68,7 +68,7 @@ This page is outdated! It compares **Prisma 1** with TypeORM. You can find an up
 
 ```ts
 const userFragment = await prisma.user({ id }).$fragment(`
-  fragment NameAndEmail on User { id email }`
+  fragment IdAndEmail on User { id email }`
 `)
 ```
 
