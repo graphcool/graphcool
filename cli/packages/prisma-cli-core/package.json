@@ -101,7 +101,7 @@
     "multimatch": "^2.1.0",
     "mysql": "^2.16.0",
     "node-forge": "^0.7.1",
-    "npm-run": "4.1.2",
+    "npm-run": "5.0.1",
     "opn": "^5.1.0",
     "prisma-client-lib": "1.23.0-test.3",
     "prisma-datamodel": "1.23.0-alpha.1",
