@@ -34,7 +34,7 @@ export interface IDirectiveInfo {
 /**
  * Represents a comment.
  * If the error flag is set, the comment indicates an error
- * and should be trated accordingly.
+ * and should be treated accordingly.
  */
 export interface IComment {
   text: string
@@ -64,7 +64,7 @@ export interface ISequenceInfo {
  */
 export interface IGQLField {
   /**
-   * The name of this sfield.
+   * The name of this field.
    */
   name: string
   /**
@@ -77,7 +77,7 @@ export interface IGQLField {
    */
   isRequired: boolean
   /**
-   * Inidicates if this field holds
+   * Indicates if this field holds
    * a list of values. Can be set for
    * scalars or relations.
    */
@@ -97,12 +97,12 @@ export interface IGQLField {
    */
   relationName: string | null
   /**
-   * Indicates if this field is uniqe across the model.
+   * Indicates if this field is unique across the model.
    */
   isUnique: boolean
 
   /**
-   * Indicates if this field is the unique identifyer.
+   * Indicates if this field is the unique identifier.
    */
   isId: boolean
 
