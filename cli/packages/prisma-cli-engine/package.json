@@ -100,7 +100,7 @@
     "lodash.property": "^4.4.2",
     "lodash.result": "^4.5.2",
     "lodash.uniqby": "^4.7.0",
-    "marked": "^0.5.1",
+    "marked": "^0.7.0",
     "marked-terminal": "^3.1.1",
     "mkdirp": "^0.5.1",
     "opn": "^5.1.0",
