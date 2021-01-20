@@ -460,7 +460,7 @@ return sequelize.transaction(async t => {
 ```
 
 ```ts
-return sequelize.transaction(async transaction => {
+return sequelize.transaction(async t => {
   try {
       const user = await User.create({
       name: "Alice",
