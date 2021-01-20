@@ -71,11 +71,11 @@ case class CoolArgs(raw: Map[String, Any]) {
         updateManys = subArgsVector("updateMany")
           .getOrElse(Vector.empty)
           .map(args =>
-            NestedUpdateMany(args.raw.get("where").map(x => FilterHelper.generateFilterElement(x.asInstanceOf[Map[String, Any]], subModel, false)),
+            NestedUpdateMany(args.raw.get("where").map(x => FilterHelper.getFilterAst(x.asInstanceOf[Map[String, Any]], subModel, false)),
                              args.subArg_!("data"))),
         deleteManys = subArgsVector("deleteMany")
           .getOrElse(Vector.empty)
-          .map(args => NestedDeleteMany(Some(FilterHelper.generateFilterElement(args.raw, subModel, false))))
+          .map(args => NestedDeleteMany(Some(FilterHelper.getFilterAst(args.raw, subModel, false))))
       )
     } else {
       NestedMutations(

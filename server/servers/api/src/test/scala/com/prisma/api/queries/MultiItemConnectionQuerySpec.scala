@@ -224,11 +224,13 @@ class MultiItemConnectionQuerySpec extends FlatSpec with Matchers with ApiSpecBa
       val g = server.query(s"""mutation{createUser(data:{name: "g", company:{create:{name:"h"}}}){id, company{id}}}""", project)
       val k = server.query(s"""mutation{createUser(data:{name: "k", company:{create:{name:"l"}}}){id, company{id}}}""", project)
 
+      val aCompanyId = a.pathAsString("data.createUser.company.id")
+
       val result = server.query(
         s"""{
           |  usersConnection(where: {
           |    company: {
-          |      id: "${a.pathAsString("data.createUser.company.id")}"
+          |      id: "$aCompanyId"
           |    }
           |  }) {
           |    edges {

@@ -63,11 +63,13 @@ class MongoFilterPerformanceSpec extends FlatSpec with Matchers with ApiSpecBase
     var timesFilterDeep = new ListBuffer[Long]
     var findFilter      = new ListBuffer[Long]
     var findFilterDeep  = new ListBuffer[Long]
+    var timesFilterOpt  = new ListBuffer[Long]
 
     val filter     = """query{users(where:{int_gt: 5, int_lt: 19, posts_some:{int_gt: 10000, comments_some: {int_gt:10000}}}){int}}"""
     val filterDeep = """query{users(where:{int_gt: 5,int_lt: 19, posts_some:{int_gt: 10000,comments_some: {int_gt:10000}}}){int, posts{int,comments{int}}}}"""
     val find       = """query{users(where:{int_gt: 5, int_lt: 19}){int}}"""
     val findDeep   = """query{users(where:{int_gt: 5, int_lt: 19}){int, posts{int,comments{int}}}}"""
+    val filterOpt  = """query{users(where:{AND:[{posts_some:{int_gt: 10000}}, {posts_some:{int_lt: 10}}, {posts_some:{int: 10}}]}){int}}"""
 
     val mutStart = System.currentTimeMillis()
     for (x <- 1 to 1000) {
@@ -92,6 +94,11 @@ class MongoFilterPerformanceSpec extends FlatSpec with Matchers with ApiSpecBase
     for (x <- 1 to numQueries) {
       findFilterDeep += query(project, findDeep)
     }
+
+    for (x <- 1 to numQueries) {
+      timesFilterOpt += query(project, filterOpt)
+    }
+
     Thread.sleep(1000)
 
     println("Data Creation: " + (mutEnd - mutStart))
@@ -99,6 +106,7 @@ class MongoFilterPerformanceSpec extends FlatSpec with Matchers with ApiSpecBase
     println("Filterquery Deep Average: " + (timesFilterDeep.sum / numQueries))
     println("Findquery Average: " + (findFilter.sum / numQueries))
     println("Findquery Deep Average: " + (findFilterDeep.sum / numQueries))
+    println("FilterOptquery Average: " + (timesFilterOpt.sum / numQueries))
   }
 
   "Testing with embedded types" should "work" in {

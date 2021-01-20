@@ -213,7 +213,8 @@ case class RelationField(
       name = this.name,
       typeIdentifier = this.relatedModel_!.idField_!.typeIdentifier,
       isList = this.isList,
-      manifestation = this.relation.inlineManifestation.map(x => FieldManifestation(x.referencingColumn))
+      manifestation = this.relation.inlineManifestation.map(x => FieldManifestation(x.referencingColumn)),
+      template = this.template.copy(behaviour = None)
     )
   }
 }

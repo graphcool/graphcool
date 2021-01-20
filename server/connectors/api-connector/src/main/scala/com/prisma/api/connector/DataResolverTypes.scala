@@ -1,7 +1,6 @@
 package com.prisma.api.connector
 
-import com.prisma.gc_values.{StringIdGCValue, GCValue, IdGCValue}
-import com.prisma.shared.models.IdType.Id
+import com.prisma.gc_values.{GCValue, IdGCValue}
 import com.prisma.shared.models._
 
 case class ScalarListElement(nodeId: IdGCValue, position: Int, value: GCValue)
@@ -124,7 +123,10 @@ case class NotFilter(filters: Vector[Filter]) extends Filter
 
 case class ScalarFilter(field: ScalarField, condition: ScalarCondition) extends Filter
 
-sealed trait ScalarCondition
+sealed trait ScalarCondition {
+  def sameAs(other: ScalarCondition) = this.getClass == other.getClass
+}
+
 case class Equals(value: GCValue)              extends ScalarCondition
 case class NotEquals(value: GCValue)           extends ScalarCondition
 case class Contains(value: GCValue)            extends ScalarCondition

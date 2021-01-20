@@ -12,22 +12,7 @@ trait FilterConditionBuilder extends BuilderBase {
     case None         => noCondition()
   }
 
-  private def buildConditionForFilter(unprocessedFilter: Filter, alias: String): Condition = {
-
-    def stripLogicalFiltersWithOnlyOneFilterContained(filter: Filter): Filter = {
-      filter match {
-        case NodeSubscriptionFilter          => NodeSubscriptionFilter
-        case AndFilter(Vector(singleFilter)) => stripLogicalFiltersWithOnlyOneFilterContained(singleFilter)
-        case OrFilter(Vector(singleFilter))  => stripLogicalFiltersWithOnlyOneFilterContained(singleFilter)
-        case AndFilter(filters)              => AndFilter(filters.map(stripLogicalFiltersWithOnlyOneFilterContained))
-        case OrFilter(filters)               => OrFilter(filters.map(stripLogicalFiltersWithOnlyOneFilterContained))
-        case NotFilter(filters)              => NotFilter(filters.map(stripLogicalFiltersWithOnlyOneFilterContained))
-        case x: RelationFilter               => x.copy(nestedFilter = stripLogicalFiltersWithOnlyOneFilterContained(x.nestedFilter))
-        case x                               => x
-      }
-    }
-
-    val filter = stripLogicalFiltersWithOnlyOneFilterContained(unprocessedFilter)
+  private def buildConditionForFilter(filter: Filter, alias: String): Condition = {
 
     def fieldFrom(scalarField: ScalarField) = field(name(alias, scalarField.dbName))
     def nonEmptyConditions(filters: Vector[Filter]): Vector[Condition] = {

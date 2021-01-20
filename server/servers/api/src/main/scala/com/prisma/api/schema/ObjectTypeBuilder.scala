@@ -189,7 +189,7 @@ class ObjectTypeBuilder(
     }
 
     val rawFilterOpt: Option[Map[String, Any]] = ctx.argOpt[Map[String, Any]]("where")
-    val filterOpt                              = rawFilterOpt.map(FilterHelper.generateFilterElement(_, model, isSubscriptionFilter))
+    val filterOpt                              = rawFilterOpt.map(FilterHelper.getFilterAst(_, model, isSubscriptionFilter))
     val skipOpt                                = ctx.argOpt[Int]("skip")
     val orderByOpt                             = ctx.argOpt[OrderBy]("orderBy")
     val afterOpt                               = ctx.argOpt[String](IdBasedConnection.Args.After.name).map(convertCursorToGcValue)
@@ -206,7 +206,7 @@ class ObjectTypeBuilder(
     val item: PrismaNode = unwrapDataItemFromContext(ctx)
 
     field match {
-      case f: ScalarField if f.isList => //Fixme have the way to resolve the field on the field itself
+      case f: ScalarField if f.isList =>
         if (capabilities.has(EmbeddedScalarListsCapability)) item.data.map(field.name).value else ScalarListDeferred(model, f, item.id)
 
       case f: ScalarField if !f.isList =>
@@ -279,6 +279,12 @@ class ObjectTypeBuilder(
 }
 
 object FilterHelper {
+
+  def getFilterAst(input: Map[String, Any], model: Model, isSubscriptionFilter: Boolean = false): AndFilter = {
+    val initial = generateFilterElement(input, model, isSubscriptionFilter)
+    AndFilter(Vector(Optimizations.FilterOptimizer.optimize(initial)))
+  }
+
   def generateFilterElement(input: Map[String, Any], model: Model, isSubscriptionFilter: Boolean = false): Filter = {
     val filterArguments = new FilterArguments(model, isSubscriptionFilter)
 
