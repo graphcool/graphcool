@@ -48,12 +48,12 @@ def commonDockerImageSettings(imageName: String, baseImage: String, tag: String)
       runShell("echo", "'#!/bin/bash'", ">>", s"$targetDir/start.sh")
       runShell("echo", "set -e", ">>", s"$targetDir/start.sh")
       runShell("echo", s"$targetDir/prerun_hook.sh", ">>", s"$targetDir/start.sh")
-      runShell("echo", s"$targetDir/bin/${executableScriptName.value}", ">>", s"$targetDir/start.sh")
+      runShell("echo", s"exec $targetDir/bin/${executableScriptName.value}", ">>", s"$targetDir/start.sh")
       runShell(s"chmod", "+x", s"$targetDir/start.sh")
       runShell(s"chmod", "+x", s"$targetDir/bin/${executableScriptName.value}")
       env("COMMIT_SHA", sys.env.getOrElse("COMMIT_SHA", sys.error("Env var COMMIT_SHA required but not found.")))
       env("CLUSTER_VERSION", sys.env.getOrElse("CLUSTER_VERSION", sys.error("Env var CLUSTER_VERSION required but not found.")))
-      entryPointShell(s"$targetDir/start.sh")
+      entryPoint(s"$targetDir/start.sh")
     }
   }
 )
@@ -441,4 +441,3 @@ lazy val root = (project in file("."))
   .settings(
     publish := { } // do not publish a JAR for the root project
   )
-
