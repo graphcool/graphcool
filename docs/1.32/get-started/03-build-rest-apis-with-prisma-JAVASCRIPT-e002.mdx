@@ -45,8 +45,8 @@ Replace the current contents of `index.js` with the following code:
 
 ```js lineNumbers,copy
 const { prisma } = require('./generated/prisma-client')
-const app = express()
 const express = require('express')
+const app = express()
 const bodyParser = require('body-parser')
 
 app.use(bodyParser.json())
