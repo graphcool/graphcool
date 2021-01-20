@@ -100,7 +100,7 @@
     "mongodb": "^3.1.10",
     "multimatch": "^2.1.0",
     "mysql": "^2.16.0",
-    "node-forge": "^0.7.1",
+    "node-forge": "^0.10.0",
     "npm-run": "4.1.2",
     "opn": "^5.1.0",
     "prisma-client-lib": "1.23.0-test.3",
