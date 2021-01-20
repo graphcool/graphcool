@@ -331,7 +331,7 @@ enum NOTIFICATION_TYPE {
 }`
 
 describe(`Schema clone functionality`, () => {
-  test('Schould clone a schema data structure correctly.', () => {
+  test('Should clone a schema data structure correctly.', () => {
     const schema = new RelationalParser().parseFromSchemaString(AirBnBTestModel)
 
     let clone = cloneSchema(schema)
