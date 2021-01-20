@@ -486,7 +486,7 @@ type User {
 
 type Profile {
   id: ID! @id
-  user: User!
+  user: User! @relation(name: "MyRelation")
 }
 ```
 
@@ -509,7 +509,7 @@ type User {
 
 type Profile {
   id: ID! @id
-  user: User!
+  user: User! @relation(name: "MyRelation")
 }
 
 type MyRelation @relationTable {
@@ -594,7 +594,7 @@ CREATE TABLE "default$default"."_PostToUser" (
 ```graphql
 type User {
   id: ID! @id
-  posts: [Post!]!
+  posts: [Post!]! @relation(name: "MyRelation")
 }
 
 type Post {
@@ -617,7 +617,7 @@ CREATE TABLE "default$default"."_MyRelation" (
 ```graphql
 type User {
   id: ID! @id
-  posts: [Post!]!
+  posts: [Post!]! @relation(name: "MyRelation")
 }
 
 type Post {
@@ -676,7 +676,7 @@ CREATE TABLE "default$default"."_PostToCategory" (
 ```graphql
 type Category {
   id: ID! @id
-  posts: [Post!]!
+  posts: [Post!]! @relation(name: "MyRelation")
 }
 
 type Post {
@@ -699,7 +699,7 @@ CREATE TABLE "default$default"."_MyRelation" (
 ```graphql
 type Category {
   id: ID! @id
-  posts: [Post!]!
+  posts: [Post!]! @relation(name: "MyRelation")
 }
 
 type Post {
@@ -708,7 +708,7 @@ type Post {
 }
 
 type MyRelation @relationTable {
-  user: User!
+  category: Category!
   post: Post!
 }
 ```
