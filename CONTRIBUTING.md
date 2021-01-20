@@ -48,7 +48,7 @@ your pull request should be accepted quickly.
 Here are further contribution instructions:
 
 * [`cli`](./cli/CONTRIBUTING.md)
-* [`examples`](./examples/CONTRIBUTING.md)
+* [`examples`](https://github.com/prisma/prisma-examples/blob/master/CONTRIBUTING.md)
 * [`server`](./server/CONTRIBUTING.md)
 
 For `cli` and `server`, **PRs need to be made against the `alpha` branch** (not `master`).
