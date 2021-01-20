@@ -17,7 +17,8 @@ The Prisma client lets you check whether a certain record exists in the database
 _Check if a user with a certain ID exists_:
 
 ```go
-userExists := client.Exists.User(&prisma.UserWhereUniqueInput{
+ctx := context.TODO()
+userExists := client.User(&prisma.UserWhereUniqueInput{
   ID: "cjli6tko8005t0a23fid7kke7",
-})
+}).Exists(ctx)
 ```
