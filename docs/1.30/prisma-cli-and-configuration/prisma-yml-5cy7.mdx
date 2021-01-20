@@ -226,7 +226,7 @@ The HTTP endpoint for your Prisma API is composed of the following components:
 
 - **Prisma server**: The server that will host your Prisma service.
 - **Workspace** (only for [Demo servers](jfr3) in Prisma Cloud): The name of the Workspace you configured through Prisma Cloud.
-- **Service name**: A descriptive name for your Prisma servic e.
+- **Service name**: A descriptive name for your Prisma service.
 - **Service stage**: The development stage of your cluster (e.g. `dev`, `staging`, `prod`).
 
 Note that the `endpoint` is actually required to deploy your Prisma service. However, if you don't specify it in `prisma.yml` before running `prisma deploy`, the CLI prompts you with a wizard to help you figure out a Prisma server as deployment target and subsequently writes the `endpoint` into `prisma.yml` for you.
@@ -355,7 +355,7 @@ Use a document database.
 databaseType: document
 ```
 
-Use a document database.
+Use a relational database.
 
 ```yml
 databaseType: relational
