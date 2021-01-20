@@ -30,6 +30,7 @@ lazy val commonSettings = Seq(
 
 lazy val commonServerSettings = commonSettings ++ Seq(libraryDependencies ++= commonServerDependencies)
 lazy val prerunHookFile = new java.io.File(sys.props("user.dir") + "/prerun_hook.sh")
+lazy val prerunHookFiles = new java.io.File(sys.props("user.dir") + "/prerun_hook_files")
 
 def commonDockerImageSettings(imageName: String, baseImage: String, tag: String) = commonServerSettings ++ Seq(
   imageNames in docker := Seq(
@@ -43,6 +44,9 @@ def commonDockerImageSettings(imageName: String, baseImage: String, tag: String)
     new Dockerfile {
       from(s"$baseImage:$tag")
       copy(appDir, targetDir)
+      if (prerunHookFiles.exists) {
+        copy(prerunHookFiles, s"$targetDir/prerun_hook_files")
+      }
       copy(prerunHookFile , s"$targetDir/prerun_hook.sh")
       runShell(s"touch", s"$targetDir/start.sh")
       runShell("echo", "'#!/bin/bash'", ">>", s"$targetDir/start.sh")
