@@ -87,7 +87,7 @@ const databaseServiceDefinitions = {
   postgres:
     image: postgres
     restart: always
-    # Uncomment the next two lines to connect to your your database from outside the Docker environment, e.g. using a database GUI like Postico
+    # Uncomment the next two lines to connect to your database from outside the Docker environment, e.g. using a database GUI like Postico
     # ports:
     # - "5432:5432"
     environment:
@@ -102,7 +102,7 @@ volumes:
   mysql:
     image: mysql:5.7
     restart: always
-    # Uncomment the next two lines to connect to your your database from outside the Docker environment, e.g. using a database GUI like Workbench
+    # Uncomment the next two lines to connect to your database from outside the Docker environment, e.g. using a database GUI like Workbench
     # ports:
     # - "3306:3306"
     environment:
@@ -116,7 +116,7 @@ volumes:
   mongo:
     image: mongo:3.6
     restart: always
-    # Uncomment the next two lines to connect to your your database from outside the Docker environment, e.g. using a database GUI like Compass
+    # Uncomment the next two lines to connect to your database from outside the Docker environment, e.g. using a database GUI like Compass
     # ports:
     # - "27017:27017"
     environment:
@@ -415,9 +415,7 @@ export class EndpointDialog {
           await disconnect()
           this.out.action.stop(prettyTime(Date.now() - before))
           this.out.log(
-            `Created datamodel definition based on ${
-              isdl.types.length
-            } ${tableName}.`,
+            `Created datamodel definition based on ${isdl.types.length} ${tableName}.`,
           )
           /**
            * Or just use the default datamodel
