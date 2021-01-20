@@ -42,7 +42,7 @@
     "@types/prettier": "1.16.1",
     "ava": "^0.25.0",
     "graphql": "^14.3.0",
-    "semantic-release": "^15.10.4",
+    "semantic-release": "^17.2.3",
     "tslint": "5.11.0",
     "tslint-config-standard": "8.0.1",
     "typescript": "3.2.2"
