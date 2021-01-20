@@ -916,8 +916,8 @@ _Fetch the last 3 records before the record with `cixnen24p33lo0143bexvr52n` as 
 <Code languages={["TypeScript"]}>
 
 ```ts
-const post: Post[] = await prisma
-  .post({
+const posts: Post[] = await prisma
+  .posts({
     last: 3,
     before: "cixnen24p33lo0143bexvr52n",
     skip: 5
