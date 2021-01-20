@@ -19,7 +19,6 @@ export default class Export extends Command {
     }),
     ['project']: flags.string({
       description: 'Path to Prisma definition file',
-      char: 'p',
     }),
   }
   async run() {
