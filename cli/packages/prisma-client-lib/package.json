@@ -34,7 +34,7 @@
     "prisma-generate-schema": "1.20.4",
     "subscriptions-transport-ws": "^0.9.15",
     "uppercamelcase": "^3.0.0",
-    "ws": "^6.1.0",
+    "ws": "^7.4.6",
     "zen-observable": "^0.8.10"
   },
   "devDependencies": {
